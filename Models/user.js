@@ -1,9 +1,10 @@
+/* eslint-disable import/no-useless-path-segments */
 /* eslint-disable no-undef */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const validator = require('validator');
+const AppError = require('./../utils/appError');
 
 const userSchema = new mongoose.Schema({
   userName: {
@@ -53,7 +54,7 @@ userSchema.pre('save', async function (next) {
     this.passwordConfirmation = undefined;
     next();
   } else {
-    throw new ValidationError('password are not the same !');
+    throw new AppError('password are not the same !', 401);
   }
 });
 
@@ -83,5 +84,6 @@ userSchema.methods.createPasswordResetToken = function () {
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
   return resetToken;
 };
+
 // eslint-disable-next-line no-multi-assign
 module.exports = users = mongoose.model('users', userSchema);

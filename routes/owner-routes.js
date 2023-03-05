@@ -1,14 +1,15 @@
 /* eslint-disable import/no-useless-path-segments */
 const express = require('express');
-const userController = require('./../controllers/userController');
-const authController = require('./../controllers/authController');
+const ownerController = require('./../controllers/ownerController');
+const authOwnerController = require('./../controllers/authOwnerController');
 // eslint-disable-next-line import/no-extraneous-dependencies, import/order
 const { check, validationResult } = require('express-validator');
 
 const router = express.Router();
 
+//SignUp For Owner
 router.post(
-  '/signupUser',
+  '/signUpOwner',
   [
     [
       check('userName', 'Name is required').not().isEmpty(),
@@ -25,22 +26,21 @@ router.post(
       }),
     ],
   ],
-  authController.Signup
+  authOwnerController.SignupOwner
 );
 
-router.post('/loginUser', authController.login);
-router.post('/forgotPasswordUser', authController.forgotPassword);
-router.patch('/resetPasswordUser/:token', authController.resetPassword);
+//Login For Owner
+router.post('/loginOwner', authOwnerController.loginOwner);
 
-router
-  .route('/')
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
+// router
+//   .route('/')
+//   .get(ownerController.getAllUsers)
+//   .post(ownerController.createUser);
 
-router
-  .route('/:id')
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+// router
+//   .route('/:id')
+//   .get(ownerController.getUser)
+//   .patch(ownerController.updateUser)
+//   .delete(ownerController.deleteUser);
 
 module.exports = router;

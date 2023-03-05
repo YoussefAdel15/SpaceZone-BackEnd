@@ -78,7 +78,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 3) send it to user's email
   const resetURL = `${req.protocol}://${req.get(
     'host'
-  )}/api/user/resetPassword/${resetToken}`;
+  )}/api/user/resetPasswordUser/${resetToken}`;
 
   const html = `  <head>
   <meta charset="utf-8">
@@ -92,6 +92,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   <a href="${resetURL}">${resetURL}</a>
   <p>If you did not request a password reset, please ignore this message.</p>
   <p>Thank you!</p>
+  <p>SpaceZone Team 💖</p>
 </body>`;
 
   try {
