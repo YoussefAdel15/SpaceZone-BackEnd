@@ -38,14 +38,6 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
 });
 
-// handle Validation errors
-class ValidationError extends Error {
-  constructor(message) {
-    super(message); // (1)
-    this.name = 'ValidationError'; // (2)
-  }
-}
-
 // Password Encryption
 userSchema.pre('save', async function (next) {
   if (this.passwordConfirmation === this.password) {
