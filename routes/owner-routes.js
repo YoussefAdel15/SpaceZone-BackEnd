@@ -32,6 +32,12 @@ router.post(
 //Login For Owner
 router.post('/loginOwner', authOwnerController.loginOwner);
 
+//Forgot Password for Owner
+router.post('/forgotPasswordOwner',authOwnerController.forgotPasswordOwner);
+
+//Reset Password for Owner
+router.patch('/resetPasswordOwner/:token', authOwnerController.resetPasswordOwner);
+
 // router
 //   .route('/')
 //   .get(ownerController.getAllUsers)

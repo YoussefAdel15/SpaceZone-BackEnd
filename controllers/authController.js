@@ -80,20 +80,63 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     'host'
   )}/api/user/resetPasswordUser/${resetToken}`;
 
-  const html = `  <head>
+  const html = `  
+  <head>
+  <style>
+  img { 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 20%;}
+  title {
+    color: black;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-allign: center;
+  }
+  h1 {
+    color: black;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%;
+    text-allign: center;
+  }
+  p {
+    color: black;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%;
+    text-allign: center;
+  }
+  a {
+    color: black;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%;
+    text-allign: center;
+  }
+  </style>
   <meta charset="utf-8">
-  <title>Reset Password</title>
+  <img src="https://i.imgur.com/5m7J1P6.png" alt="">
+  <title>Welcome to SpaceZone</title>
 </head>
 <body>
   <h1>Reset Your Password</h1>
   <p>Hello,${user.userName}</p>
-  <p>You are receiving this email because you requested a password reset for your account.</p>
+  <p> Please take a second to make sure we've got your email right.</p>
   <p>Please click on the link below to reset your password:</p>
-  <a href="${resetURL}">${resetURL}</a>
+  <a href="${resetURL}">Click Here</a>
   <p>If you did not request a password reset, please ignore this message.</p>
   <p>Thank you!</p>
-  <p>SpaceZone Team 💖</p>
-</body>`;
+  <p>SpaceZone Team </p>
+</body>
+
+`;
+
 
   try {
     await sendEmail({
