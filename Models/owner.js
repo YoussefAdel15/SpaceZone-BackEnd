@@ -61,7 +61,6 @@ ownerSchema.methods.correctPassword = async function (
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-
 //Creating password reset token
 ownerSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(16).toString('hex');
