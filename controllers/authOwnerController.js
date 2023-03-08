@@ -84,58 +84,119 @@ exports.forgotPasswordOwner = catchAsync(async (req, res, next) => {
   )}/api/owner/resetPasswordOwner/${resetToken}`;
 
   const html = `
+  
   <head>
-  <style>
-  img { 
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 20%;}
-  title {
-    color: black;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    text-allign: center;
-  }
-  h1 {
-    color: black;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 40%;
-    text-allign: center;
-  }
-  p {
-    color: black;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 40%;
-    text-allign: center;
-  }
-  a {
-    color: black;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 40%;
-    text-allign: center;
-  }
-  </style>
   <meta charset="utf-8">
-  <img src="https://i.imgur.com/5m7J1P6.png" alt="">
+<!--  <link rel="stylesheet" href="mystyle.css">-->
   <title>Welcome to SpaceZone</title>
+<style>
+
+.bigBox{
+    
+    
+}
+
+.logo{
+    
+    display:flex;
+}
+.mail{
+    margin:auto;
+    width:900px;
+}
+img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 20%;
+}
+title {
+    color: black;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-allign: center;
+}
+h1 {
+    color: black;
+    text-align: center;
+    margin: auto;
+    width: 100%;
+    text-allign: center;
+}
+p {
+    color: black;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%;
+    text-allign: center;
+}
+
+
+.greeting{
+text-align: center;
+
+}
+
+.texBody{
+  text-align: center;
+    margin-top:1rem;
+}
+
+.reset{
+    text-align: center;
+    margin:auto;
+    margin-top:1rem;
+}
+
+.res{
+    background-color:deepskyblue;
+    border-radius:30px;
+    border:deepskyblue;
+    padding:1rem;
+    color:white;
+}
+.footer{
+    display:flex;
+   justify-content: space-between;
+}
+a{
+  color: black;
+}
+</style>
 </head>
 <body>
-  <h1>Reset Your Password</h1>
-  <p>Hello,${owner.userName}</p>
-  <p> Please take a second to make sure we've got your email right.</p>
-  <p>Please click on the link below to reset your password:</p>
-  <a href="${resetURL}">Click Here</a>
-  <p>If you did not request a password reset, please ignore this message.</p>
-  <p>Thank you!</p>
-  <p>SpaceZone Team </p>
+
+<div class="bigBox">
+        <div class="logo">
+          <img src="https://i.imgur.com/5m7J1P6.png" alt="logo Image"/>
+        </div>
+          <div class="mail">
+            <div class="mailHead"><h1>RESETING YOUR SPACEZONE PASSWORD</h1></div>
+              <div class="greeting ">
+                  <h4>Hello Guest</h4>
+              </div>
+              <div class="texBody ">We are very sorry for your brain damage that you have forgotten your password, but DON'T WORRY</div>
+              <div class="reset">
+                  <button  class="res  ">Reset Password</button>
+              </div>
+              <div class="texBody ">
+                  If you didn't request this email, please beware that this might be an attempt to steal your account
+              </div>
+
+              <h5 class="texBody ">SpaceZone Team</h5>
+
+
+<!--              <div class="footer ">-->
+<!--                  <a href="Home" class="home">SpaceZone</a>-->
+<!--                  <a href="ContactUs">Contact US</a>-->
+<!--                  <a href="AboutUs">Terms&Conditions</a>-->
+<!--              </div>-->
+
+          </div>
+      </div>
+</body>
 </body>
 `;
 
