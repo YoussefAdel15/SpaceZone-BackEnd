@@ -1,5 +1,6 @@
 /* eslint-disable no-shadow */
 /* eslint-disable import/no-useless-path-segments */
+const { promisify } = require('util');
 const Owner = require('../Models/owner');
 // eslint-disable-next-line import/order
 const crypto = require('crypto');
@@ -191,4 +192,50 @@ exports.resetPasswordOwner = catchAsync(async (req, res, next) => {
     status: 'success',
     token,
   });
+});
+
+exports.protect = catchAsync(async (req, res, next) => {
+  let token;
+  // 1) Getting the token and check if it' there
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  //console.log(token);
+
+  if (!token) {
+    next(new AppError('You are not logged in, please login'), 401);
+  }
+
+  // 2) Validate the token (Verification)
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  // console.log(decoded);
+
+  // 3) Check if owner still exists
+  const currentOwner = await Owner.findById(decoded.id);
+  if (!currentOwner) {
+    return next(
+      new AppError('The Owner belonging to this token is no longer exist.', 401)
+    );
+  }
+
+  // 4) Check if the account that logging in have the role Owner or not
+  //console.log(currentOwner);
+  if (currentOwner.role !== 'Owner') {
+    return next(
+      new AppError('Your Account is not authorized to use this page', 401)
+    );
+  }
+  // 5) Check if user changed password after the Token was issued
+  if (currentOwner.changePasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password! please login again', 401)
+    );
+  }
+
+  //GRANT ACCESS TO PROTECTED ROUTE
+  req.owner = currentOwner;
+  next();
 });
