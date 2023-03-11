@@ -159,7 +159,8 @@ text-align: center;
 }
 .footer{
     display:flex;
-   justify-content: space-between;
+   justify-content: space-evenly;
+   text-align: center;
 }
 a{
   color: black;
@@ -175,11 +176,13 @@ a{
           <div class="mail">
             <div class="mailHead"><h1>RESETING YOUR SPACEZONE PASSWORD</h1></div>
               <div class="greeting ">
-                  <h4>Hello Guest</h4>
+                  <h4>Hello ${owner.userName}</h4>
               </div>
-              <div class="texBody ">We are very sorry for your brain damage that you have forgotten your password, but DON'T WORRY</div>
+              <div class="texBody ">We are very sorry that you have forgotten your password, but DON'T WORRY</div>
               <div class="reset">
-                  <button  class="res  ">Reset Password</button>
+              <a href="${resetURL}">
+              <button class="res  "> RESET YOUR PASSWORD </button>
+            </a>
               </div>
               <div class="texBody ">
                   If you didn't request this email, please beware that this might be an attempt to steal your account
@@ -188,11 +191,16 @@ a{
               <h5 class="texBody ">SpaceZone Team</h5>
 
 
-<!--              <div class="footer ">-->
-<!--                  <a href="Home" class="home">SpaceZone</a>-->
-<!--                  <a href="ContactUs">Contact US</a>-->
-<!--                  <a href="AboutUs">Terms&Conditions</a>-->
-<!--              </div>-->
+              <div class="footer ">
+                <div>
+                <a href="https://tefa600.github.io/webZone/" class="home">SpaceZone</a>
+                </div>
+                  <div><a href="https://tefa600.github.io/Contact">Contact US</a></div>
+                  <div>
+                  <a href="https://tefa600.github.io/About">Terms&Conditions</a>
+                  </div>
+                  
+              </div>
 
           </div>
       </div>
