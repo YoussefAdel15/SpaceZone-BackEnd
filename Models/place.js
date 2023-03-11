@@ -5,6 +5,10 @@ const mongoose = require('mongoose');
 const AppError = require('./../utils/appError');
 
 const placeSchema = new mongoose.Schema({
+  owner: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'owners',
+  },
   placeName: {
     type: String,
     required: [true, 'WorkingSpace Must Have A Name'],
@@ -21,7 +25,19 @@ const placeSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please enter your WorkingSpace address'],
   },
-  googleAddres: {
+  zone: {
+    type: String,
+    required: [true, 'place must have a zone'],
+  },
+  number: {
+    type: String,
+    required: [true, 'place must have a number'],
+  },
+  selfService: {
+    type: Boolean,
+    required: [true, 'must specify if the place is self Service or not'],
+  },
+  googleAddress: {
     type: String,
     required: [
       true,
@@ -35,6 +51,9 @@ const placeSchema = new mongoose.Schema({
   vipHourPrice: {
     type: Number,
   },
+  roomPrice: {
+    type: Number,
+  },
   numberOfSeats: {
     type: Number,
     required: [true, 'Please Enter number of Seats in your WorkingSpace'],
@@ -45,13 +64,13 @@ const placeSchema = new mongoose.Schema({
   //   products:{
   //     type
   //   },
-  openAt: {
+  openTime: {
     type: Date,
-    required: [true, 'please enter the starting time of your WorkingSpace'],
+    //required: [true, 'please enter the starting time of your WorkingSpace'],
   },
-  closeAt: {
+  closeTime: {
     type: Date,
-    required: [true, 'Please Enter your closing time'],
+    //required: [true, 'Please Enter your closing time'],
   },
   available: {
     type: Boolean,

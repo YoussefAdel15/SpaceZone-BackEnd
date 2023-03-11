@@ -45,6 +45,9 @@ router
   .route('/places')
   .get(authOwnerController.protect, ownerController.getPlaces);
 
+router
+  .route('/getOwnerPlaces')
+  .post(authOwnerController.protect, ownerController.createPlaceForOwner);
 // router
 //   .route('/')
 //   .get(ownerController.getAllUsers)

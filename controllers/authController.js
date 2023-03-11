@@ -222,7 +222,7 @@ a{
     await user.save({ validateBeforeSave: false });
 
     return next(
-      new AppError('There wase an error sending the mail. Try again later', 500)
+      new AppError('There was an error sending the mail. Try again later', 500)
     );
   }
 });

@@ -307,4 +307,5 @@ exports.protect = catchAsync(async (req, res, next) => {
   //GRANT ACCESS TO PROTECTED ROUTE
   req.owner = currentOwner;
   next();
+  return currentOwner;
 });

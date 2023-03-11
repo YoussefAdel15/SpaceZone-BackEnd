@@ -25,7 +25,7 @@ const ownerSchema = new mongoose.Schema({
   },
   passwordConfirmation: {
     type: String,
-    required: [true, 'must confirm your password'],
+    required: [false, 'must confirm your password'],
   },
   role: {
     type: String,
