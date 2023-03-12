@@ -8,6 +8,7 @@ const placeSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.ObjectId,
     ref: 'owners',
+    select: false,
   },
   placeName: {
     type: String,
