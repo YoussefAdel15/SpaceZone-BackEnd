@@ -25,20 +25,29 @@ const ownerSchema = new mongoose.Schema({
   },
   passwordConfirmation: {
     type: String,
-    required: [true, 'must confirm your password'],
+    required: [false, 'must confirm your password'],
   },
   role: {
     type: String,
-    select: false,
     default: 'Owner',
   },
   accepted: {
     type: Boolean,
     default: false,
   },
+  places: {
+    type: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'places',
+      },
+    ],
+  },
   passwordResetToken: String,
   passwordResetExpires: Date,
-  passwordChangedAt: Date,
+  passwordChangedAt: {
+    type: Date,
+  },
 });
 
 // Password Encryption
@@ -79,6 +88,19 @@ ownerSchema.pre('save', function (next) {
   this.passwordChangedAt = Date.now() - 1000; // due to the delay of writing on the database we - 1s to make it more accurate (not soo accurate)
   next();
 });
+
+ownerSchema.methods.changePasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+
+    console.log(changedTimestamp, JWTTimestamp);
+    return JWTTimestamp < changedTimestamp;
+  }
+  //False means not changed
+  return false;
+};
 // eslint-disable-next-line no-multi-assign, no-undef
 module.exports = owners = mongoose.model('owners', ownerSchema);
-

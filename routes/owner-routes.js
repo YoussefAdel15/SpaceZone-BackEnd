@@ -33,11 +33,21 @@ router.post(
 router.post('/loginOwner', authOwnerController.loginOwner);
 
 //Forgot Password for Owner
-router.post('/forgotPasswordOwner',authOwnerController.forgotPasswordOwner);
+router.post('/forgotPasswordOwner', authOwnerController.forgotPasswordOwner);
 
 //Reset Password for Owner
-router.patch('/resetPasswordOwner/:token', authOwnerController.resetPasswordOwner);
+router.patch(
+  '/resetPasswordOwner/:token',
+  authOwnerController.resetPasswordOwner
+);
 
+router
+  .route('/places')
+  .get(authOwnerController.protect, ownerController.getPlaces);
+
+router
+  .route('/getOwnerPlaces')
+  .post(authOwnerController.protect, ownerController.createPlaceForOwner);
 // router
 //   .route('/')
 //   .get(ownerController.getAllUsers)

@@ -9,3 +9,4 @@
 - npm install bcryptjs
 - npm install jsonwebtoken
 - npm install nodemailer
+- npm install morgan

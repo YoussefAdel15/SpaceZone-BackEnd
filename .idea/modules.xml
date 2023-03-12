@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< Updated upstream
       <module fileurl="file://$PROJECT_DIR$/.idea/sz.iml" filepath="$PROJECT_DIR$/.idea/sz.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/SpaceZone-BackEnd.iml" filepath="$PROJECT_DIR$/.idea/SpaceZone-BackEnd.iml" />
+>>>>>>> Stashed changes
     </modules>
   </component>
 </project>
