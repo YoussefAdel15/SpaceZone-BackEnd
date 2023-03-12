@@ -1,7 +1,7 @@
 /* eslint-disable import/no-useless-path-segments */
 const express = require('express');
-const userController = require('./../controllers/userController');
-const authController = require('./../controllers/authController');
+const userController = require('./../controllers/User/userController');
+const authController = require('./../controllers/User/authController');
 // eslint-disable-next-line import/no-extraneous-dependencies, import/order
 const { check, validationResult } = require('express-validator');
 

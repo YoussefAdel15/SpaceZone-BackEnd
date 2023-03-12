@@ -1,18 +1,22 @@
+//Constants
+
 /* eslint-disable no-shadow */
 /* eslint-disable import/no-useless-path-segments */
 const { promisify } = require('util');
-const Owner = require('../Models/owner');
+const Owner = require('../../Models/owner');
 // eslint-disable-next-line import/order
 const crypto = require('crypto');
-const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
-// eslint-disable-next-line import/no-extraneous-dependencies, import/order
+const catchAsync = require('./../../utils/catchAsync');
+const AppError = require('./../../utils/appError');
+// eslint-disable-next-line import/no-extraneous-dependencies, import/order, no-unused-vars
 const { check, validationResult } = require('express-validator');
 // eslint-disable-next-line import/order
 const jwt = require('jsonwebtoken');
-const sendEmail = require('./../utils/email');
-const owner = require('../Models/owner');
+const sendEmail = require('./../../utils/email');
 
+//Methods
+
+//Sign
 exports.SignupOwner = catchAsync(async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -40,6 +44,7 @@ exports.SignupOwner = catchAsync(async (req, res, next) => {
   });
 });
 
+//Login
 exports.loginOwner = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -199,7 +204,6 @@ a{
                   <div>
                   <a href="https://tefa600.github.io/About">Terms&Conditions</a>
                   </div>
-                  
               </div>
 
           </div>
@@ -229,6 +233,7 @@ a{
   }
 });
 
+//Reset Password
 exports.resetPasswordOwner = catchAsync(async (req, res, next) => {
   //  1) get user based on the token
   const hashedToken = crypto
@@ -263,6 +268,7 @@ exports.resetPasswordOwner = catchAsync(async (req, res, next) => {
   });
 });
 
+//Protect Routes
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
   // 1) Getting the token and check if it' there
