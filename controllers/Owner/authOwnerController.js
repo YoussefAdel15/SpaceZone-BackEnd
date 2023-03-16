@@ -1,3 +1,4 @@
+/* eslint-disable arrow-body-style */
 //Constants
 
 /* eslint-disable no-shadow */
@@ -233,6 +234,19 @@ a{
   }
 });
 
+// Restrict The Route to specific Roles
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+
+    next();
+  };
+};
+
 //Reset Password
 exports.resetPasswordOwner = catchAsync(async (req, res, next) => {
   //  1) get user based on the token
@@ -296,14 +310,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
-  // 4) Check if the account that logging in have the role Owner or not
-  //console.log(currentOwner);
-  if (currentOwner.role !== 'Owner') {
-    return next(
-      new AppError('Your Account is not authorized to use this page', 401)
-    );
-  }
-  // 5) Check if user changed password after the Token was issued
+  // 4) Check if user changed password after the Token was issued
   if (currentOwner.changePasswordAfter(decoded.iat)) {
     return next(
       new AppError('User recently changed password! please login again', 401)
