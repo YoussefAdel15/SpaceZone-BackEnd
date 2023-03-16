@@ -1,14 +1,14 @@
 /* eslint-disable import/no-useless-path-segments */
-const User = require('../Models/user');
+const User = require('../../Models/user');
 // eslint-disable-next-line import/order
 const crypto = require('crypto');
-const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
+const catchAsync = require('./../../utils/catchAsync');
+const AppError = require('./../../utils/appError');
 // eslint-disable-next-line import/no-extraneous-dependencies, import/order
 const { check, validationResult } = require('express-validator');
 // eslint-disable-next-line import/order
 const jwt = require('jsonwebtoken');
-const sendEmail = require('./../utils/email');
+const sendEmail = require('./../../utils/email');
 
 exports.Signup = catchAsync(async (req, res, next) => {
   const errors = validationResult(req);

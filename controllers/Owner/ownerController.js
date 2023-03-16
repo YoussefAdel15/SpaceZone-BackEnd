@@ -1,11 +1,11 @@
 /* eslint-disable import/no-useless-path-segments */
 // eslint-disable-next-line import/order
-const Owner = require('./../Models/owner');
+const Owner = require('./../../Models/owner');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const authOwner = require('./../controllers/authOwnerController');
-const catchAsync = require('./../utils/catchAsync');
-const Place = require('./../Models/place');
+const authOwner = require('./../Owner/authOwnerController');
+const catchAsync = require('./../../utils/catchAsync');
+const Place = require('./../../Models/place');
 
 exports.getAllOwners = catchAsync(async (req, res) => {
   const users = await Owner.find();
@@ -29,7 +29,6 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-//TODO : Need to be completed
 exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
   const token = req.headers.authorization.split(' ')[1];
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
@@ -49,6 +48,7 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     numberOfRooms: req.body.numberOfRooms,
     openTime: req.body.openAt,
     closeTime: req.body.closeAt,
+    owner: currentOwner.id,
   });
   await newPlace.save();
   currentOwner.places.push(newPlace);
@@ -77,6 +77,7 @@ exports.updateOwner = (req, res) => {
     message: 'This route is not yet defined!',
   });
 };
+
 exports.deleteOwner = (req, res) => {
   res.status(500).json({
     status: 'error',
@@ -84,9 +85,12 @@ exports.deleteOwner = (req, res) => {
   });
 };
 
-exports.getPlaces = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
-};
+exports.getPlaces = catchAsync(async (req, res) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const currentOwner = await Owner.findById(decoded.id);
+
+  const placeDetails = await Place.find({ owner: currentOwner.id });
+
+  res.status(200).json(placeDetails);
+});

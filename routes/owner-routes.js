@@ -1,7 +1,7 @@
 /* eslint-disable import/no-useless-path-segments */
 const express = require('express');
-const ownerController = require('./../controllers/ownerController');
-const authOwnerController = require('./../controllers/authOwnerController');
+const ownerController = require('./../controllers/Owner/ownerController');
+const authOwnerController = require('./../controllers/Owner/authOwnerController');
 // eslint-disable-next-line import/no-extraneous-dependencies, import/order
 const { check, validationResult } = require('express-validator');
 
@@ -41,22 +41,19 @@ router.patch(
   authOwnerController.resetPasswordOwner
 );
 
+// GET ALL PLACES ROUTE (WAS FOR TEST ONLY)
 router
   .route('/places')
   .get(authOwnerController.protect, ownerController.getPlaces);
 
+// ADD A PLACE FOR SPECIFIC OWNER
+router
+  .route('/addOwnerPlaces')
+  .post(authOwnerController.protect, ownerController.createPlaceForOwner);
+
+//GET OWNER PLACES
 router
   .route('/getOwnerPlaces')
-  .post(authOwnerController.protect, ownerController.createPlaceForOwner);
-// router
-//   .route('/')
-//   .get(ownerController.getAllUsers)
-//   .post(ownerController.createUser);
-
-// router
-//   .route('/:id')
-//   .get(ownerController.getUser)
-//   .patch(ownerController.updateUser)
-//   .delete(ownerController.deleteUser);
+  .get(authOwnerController.protect, ownerController.getPlaces);
 
 module.exports = router;

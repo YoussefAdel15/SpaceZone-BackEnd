@@ -1,6 +1,6 @@
 /* eslint-disable import/no-useless-path-segments */
-const User = require('./../Models/user');
-const catchAsync = require('./../utils/catchAsync');
+const User = require('./../../Models/user');
+const catchAsync = require('./../../utils/catchAsync');
 
 exports.getAllUsers = catchAsync(async (req, res) => {
   const users = await User.find();

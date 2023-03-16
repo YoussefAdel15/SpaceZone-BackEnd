@@ -10,3 +10,7 @@
 - npm install jsonwebtoken
 - npm install nodemailer
 - npm install morgan
+
+# Hosting URL
+
+https://spacezone-backend.cyclic.app
