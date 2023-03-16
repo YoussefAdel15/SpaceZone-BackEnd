@@ -1,4 +1,6 @@
+/* eslint-disable arrow-body-style */
 /* eslint-disable import/no-useless-path-segments */
+const { promisify } = require('util');
 const User = require('../../Models/user');
 // eslint-disable-next-line import/order
 const crypto = require('crypto');
@@ -259,4 +261,57 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     status: 'success',
     token,
   });
+});
+
+// Restrict The Route to specific Roles
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+    next();
+  };
+};
+
+//Protect Routes
+exports.protect = catchAsync(async (req, res, next) => {
+  let token;
+  // 1) Getting the token and check if it' there
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  //console.log(token);
+
+  if (!token) {
+    next(new AppError('You are not logged in, please login'), 401);
+  }
+
+  // 2) Validate the token (Verification)
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  // console.log(decoded);
+
+  // 3) Check if user still exists
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError('The User belonging to this token is no longer exist.', 401)
+    );
+  }
+
+  // 4) Check if user changed password after the Token was issued
+  if (currentUser.changePasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password! please login again', 401)
+    );
+  }
+
+  //GRANT ACCESS TO PROTECTED ROUTE
+  req.user = currentUser;
+  next();
+  return currentUser;
 });
