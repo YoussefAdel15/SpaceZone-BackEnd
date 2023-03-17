@@ -39,6 +39,6 @@ exports.editThisPlace = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'Success',
-    massage: `place ${req.params.id} has been updated`,
+    massage: `place ${req.params.id} has been updated succesfully`,
   });
 });
