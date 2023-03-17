@@ -56,4 +56,9 @@ router
   .route('/getOwnerPlaces')
   .get(authOwnerController.protect, ownerController.getPlaces);
 
+//DELETE OWNER ACCOUNT
+router
+  .route('/deleteOwner/:id')
+  .delete(authOwnerController.protect, ownerController.deleteOwner);
+
 module.exports = router;

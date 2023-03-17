@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable arrow-body-style */
 /* eslint-disable import/no-useless-path-segments */
 const { promisify } = require('util');
@@ -11,6 +12,7 @@ const { check, validationResult } = require('express-validator');
 // eslint-disable-next-line import/order
 const jwt = require('jsonwebtoken');
 const sendEmail = require('./../../utils/email');
+const user = require('../../Models/user');
 
 exports.Signup = catchAsync(async (req, res, next) => {
   const errors = validationResult(req);
@@ -25,6 +27,7 @@ exports.Signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirmation: req.body.passwordConfirmation,
   });
+  
 
   const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
@@ -38,6 +41,7 @@ exports.Signup = catchAsync(async (req, res, next) => {
     },
   });
 });
+
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;

@@ -1,11 +1,14 @@
 /* eslint-disable import/no-useless-path-segments */
 // eslint-disable-next-line import/order
-const Owner = require('./../../Models/owner');
+const mongoose = require('mongoose');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const Owner = require('./../../Models/owner');
 const authOwner = require('./../Owner/authOwnerController');
 const catchAsync = require('./../../utils/catchAsync');
 const Place = require('./../../Models/place');
+
+const AppError = require('../../utils/appError');
 
 exports.getAllOwners = catchAsync(async (req, res) => {
   const users = await Owner.find();
@@ -78,12 +81,21 @@ exports.updateOwner = (req, res) => {
   });
 };
 
-exports.deleteOwner = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
-};
+exports.deleteOwner = catchAsync(async (req, res, next) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const currentOwner = await Owner.findById(decoded.id);
+  if (currentOwner.id ===(req.params.id) ) {
+   const deleteOwner = await Owner.findByIdAndDelete(currentOwner.id);
+   res.status(200).json({
+    status: 'Success',
+    message:`Owner ${req.params.id} has been deleted succesfully`,
+  })
+  }
+  else {
+    return next(new AppError('This account does not belong to you', 401));
+  }
+});
 
 exports.getPlaces = catchAsync(async (req, res) => {
   const token = req.headers.authorization.split(' ')[1];
