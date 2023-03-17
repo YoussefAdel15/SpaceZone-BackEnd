@@ -32,14 +32,15 @@ router.post('/loginUser', authController.login);
 router.post('/forgotPasswordUser', authController.forgotPassword);
 router.patch('/resetPasswordUser/:token', authController.resetPassword);
 
-router
-  .route('/')
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
+router.route('/').get(userController.getAllUsers);
 
 router
   .route('/:id')
-  .get(userController.getUser)
+  .get(
+    authController.protect,
+    authController.restrictTo('User'),
+    userController.getUser
+  )
   .patch(userController.updateUser)
   .delete(userController.deleteUser);
 

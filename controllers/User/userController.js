@@ -26,18 +26,26 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
     data: null,
   });
 });
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
+exports.getUser = catchAsync(async (req, res, next) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const currentUser = await User.findById(decoded.id);
+
+  if (!currentUser) {
+    return next(new AppError('User not found', 404));
+  }
+
+  if (currentUser._id.toString() !== req.params.id) {
+    return next(new AppError('This account does not belong to you', 401));
+  }
+
+  res.status(200).json({
+    status: 'Success',
+    message: `User ${req.params.id} has been found successfully`,
+    data: currentUser,
   });
-};
-exports.createUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
-};
+});
+
 exports.updateUser = (req, res) => {
   res.status(500).json({
     status: 'error',
@@ -48,7 +56,6 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    console.log(decoded);
 
     const currentUser = await User.findById(decoded.id);
 
