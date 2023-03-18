@@ -35,10 +35,13 @@ exports.editThisPlace = catchAsync(async (req, res, next) => {
     return next(new AppError('This Place Does not Belong to you', 401));
   }
 
-  const newPlace = await Place.findByIdAndUpdate(req.params.id, req.body);
+  const newPlace = await Place.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
 
   res.status(200).json({
     status: 'Success',
-    massage: `place ${req.params.id} has been updated succesfully`,
+    massage: `place ${req.params.id} has been updated successfully`,
+    data: newPlace,
   });
 });

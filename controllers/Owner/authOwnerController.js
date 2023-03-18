@@ -272,7 +272,7 @@ exports.resetPasswordOwner = catchAsync(async (req, res, next) => {
 // Restrict The Route to specific Roles
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!roles.includes(req.owner.role)) {
       return next(
         new AppError('You do not have permission to perform this action', 403)
       );

@@ -38,10 +38,18 @@ router
   .route('/:id')
   .get(
     authController.protect,
-    authController.restrictTo('User'),
+    authController.restrictTo('User', 'Admin'),
     userController.getUser
   )
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+  .patch(
+    authController.protect,
+    authController.restrictTo('User', 'Admin'),
+    userController.updateUser
+  )
+  .delete(
+    authController.protect,
+    authController.restrictTo('User', 'Admin'),
+    userController.deleteUser
+  );
 
 module.exports = router;

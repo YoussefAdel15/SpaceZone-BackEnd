@@ -62,37 +62,61 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getOwner = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
+exports.getOwner = catchAsync(async (req, res, next) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const currentOwner = await Owner.findById(decoded.id);
+
+  if (!currentOwner) {
+    return next(new AppError('User not found', 404));
+  }
+
+  if (currentOwner._id.toString() !== req.params.id) {
+    return next(new AppError('This account does not belong to you', 401));
+  }
+
+  res.status(200).json({
+    status: 'Success',
+    message: `owner ${req.params.id} has been found successfully`,
+    data: currentOwner,
   });
-};
+});
 exports.createOwner = (req, res) => {
   res.status(500).json({
     status: 'error',
     message: 'This route is not yet defined!',
   });
 };
-exports.updateOwner = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
-};
+exports.updateOwner = catchAsync(async (req, res) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const currentOwner = await Owner.findById(decoded.id);
+
+  if (currentOwner.id === req.params.id) {
+    const updateOwner = await Owner.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    res.status(200).json({
+      status: 'Success',
+      message: `Owner ${req.params.id} has been UPDATED successfully`,
+      data: updateOwner,
+    });
+  } else {
+    return next(new AppError('This account does not belong to you', 401));
+  }
+});
 
 exports.deleteOwner = catchAsync(async (req, res, next) => {
   const token = req.headers.authorization.split(' ')[1];
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   const currentOwner = await Owner.findById(decoded.id);
-  if (currentOwner.id ===(req.params.id) ) {
-   const deleteOwner = await Owner.findByIdAndDelete(currentOwner.id);
-   res.status(200).json({
-    status: 'Success',
-    message:`Owner ${req.params.id} has been deleted succesfully`,
-  })
-  }
-  else {
+  if (currentOwner.id === req.params.id) {
+    const deleteOwner = await Owner.findByIdAndDelete(currentOwner.id);
+    res.status(200).json({
+      status: 'Success',
+      message: `Owner ${req.params.id} has been deleted successfully`,
+    });
+  } else {
     return next(new AppError('This account does not belong to you', 401));
   }
 });

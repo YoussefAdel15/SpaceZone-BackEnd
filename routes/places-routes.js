@@ -11,6 +11,6 @@ router.route('/getAllPlaces').get(placeController.getAllPlaces);
 //EDIT THE PLACE THAT THE OWNER IS OPENING NOW
 router
   .route('/editThisPlace/:id')
-  .post(authOwnerController.protect, placeController.editThisPlace);
+  .patch(authOwnerController.protect, placeController.editThisPlace);
 
 module.exports = router;
