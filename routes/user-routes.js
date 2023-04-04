@@ -32,15 +32,24 @@ router.post('/loginUser', authController.login);
 router.post('/forgotPasswordUser', authController.forgotPassword);
 router.patch('/resetPasswordUser/:token', authController.resetPassword);
 
-router
-  .route('/')
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
+router.route('/').get(userController.getAllUsers);
 
 router
   .route('/:id')
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+  .get(
+    authController.protect,
+    authController.restrictTo('User', 'Admin'),
+    userController.getUser
+  )
+  .patch(
+    authController.protect,
+    authController.restrictTo('User', 'Admin'),
+    userController.updateUser
+  )
+  .delete(
+    authController.protect,
+    authController.restrictTo('User', 'Admin'),
+    userController.deleteUser
+  );
 
 module.exports = router;

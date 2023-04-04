@@ -56,9 +56,24 @@ router
   .route('/getOwnerPlaces')
   .get(authOwnerController.protect, ownerController.getPlaces);
 
-//DELETE OWNER ACCOUNT
+//DELETE OWNER ACCOUNT / GET OWNER DATA /  UPDATE OWNER DATA
 router
-  .route('/deleteOwner/:id')
-  .delete(authOwnerController.protect, ownerController.deleteOwner);
+  .route('/:id')
+  .delete(
+    authOwnerController.protect,
+    authOwnerController.restrictTo('Owner', 'Admin'),
+    ownerController.deleteOwner
+  )
+  .get(
+    authOwnerController.protect,
+    authOwnerController.restrictTo('Owner', 'Admin'),
+    ownerController.getOwner
+  )
+  //TODO
+  .patch(
+    authOwnerController.protect,
+    authOwnerController.restrictTo('Owner', 'Admin'),
+    ownerController.updateOwner
+  );
 
 module.exports = router;

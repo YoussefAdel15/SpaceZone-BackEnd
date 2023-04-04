@@ -27,7 +27,6 @@ exports.Signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirmation: req.body.passwordConfirmation,
   });
-  
 
   const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
@@ -41,7 +40,6 @@ exports.Signup = catchAsync(async (req, res, next) => {
     },
   });
 });
-
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
