@@ -10,9 +10,16 @@ const catchAsync = require('./../../utils/catchAsync');
 const Owner = require('./../../Models/owner');
 const AppError = require('../../utils/appError');
 const place = require('./../../Models/place');
+const apiFeatures = require('./../../utils/apiFeatures');
 
 exports.getAllPlaces = catchAsync(async (req, res, next) => {
-  const places = await Place.find();
+  const features = new apiFeatures(Place.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+
+  const places = await features.query;
 
   res.status(200).json({
     status: 'success',
@@ -20,6 +27,15 @@ exports.getAllPlaces = catchAsync(async (req, res, next) => {
     data: {
       places,
     },
+  });
+});
+
+exports.getPlace = catchAsync(async (req, res, next) => {
+  const place = await Place.findById(req.params.id);
+  res.status(200).json({
+    status: 'Success',
+    massage: `place ${req.params.id} has been found successfully`,
+    data: place,
   });
 });
 
