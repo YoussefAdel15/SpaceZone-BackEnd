@@ -52,4 +52,5 @@ router
     userController.deleteUser
   );
 
+router.route('/logout').post(authController.logOut);
 module.exports = router;

@@ -317,3 +317,10 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
   return currentUser;
 });
+
+exports.logOut = (req, res) => {
+  res.status(500).json({
+    status: 'Fail',
+    massage: 'this route is not implemented yet',
+  });
+};
