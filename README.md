@@ -28,21 +28,21 @@ npm install
 npm start
 ````
 ### INSTALLED PACKAGES
-- npm install express
-- npm install nodemon
-- npm install body-parser
-- npm install mongoose@5
-- npm install validator
-- npm install express-validator
-- npm install bcryptjs
-- npm install jsonwebtoken
-- npm install nodemailer
-- npm install morgan
-- npm install cors
-- npm install helmet
-- npm install express-mongo-sanitize
-- npm install xss-clean
-- npm insatall express-rate-limit
+- express
+- nodemon
+- body-parser
+- mongoose@5
+- validator
+- express-validator
+- bcryptjs
+- jsonwebtoken
+- nodemailer
+- morgan
+- cors
+- helmet
+- express-mongo-sanitize
+- xss-clean
+- express-rate-limit
 
 ## Authors
 Youssef Adel Farag (youssefadel22022@gmail.com), Baher Samii (bahersami1907@gmail.com)
