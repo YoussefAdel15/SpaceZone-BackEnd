@@ -1,8 +1,8 @@
 # to install
 
-- npm install express --save
-- npm install nodemon --save-dev
-- npm install body-parser --save
+- npm install express
+- npm install nodemon
+- npm install body-parser
 - npm install mongoose@5
 - npm install validator
 - npm install express-validator
@@ -10,6 +10,11 @@
 - npm install jsonwebtoken
 - npm install nodemailer
 - npm install morgan
+- npm install cors
+- npm install helmet
+- npm install express-mongo-sanitize
+- npm install xss-clean
+- npm insatall express-rate-limit
 
 # Hosting URL
 
