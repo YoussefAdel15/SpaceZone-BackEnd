@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const xss = require('xss-clean');
 
 const globalErrorHandler = require('./controllers/errorController');
+const AppError = require('./utils/appError');
 
 const app = express();
 
