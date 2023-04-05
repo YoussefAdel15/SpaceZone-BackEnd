@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const xss = require('xss-clean');
+const cookieParser = require('cookie-parser');
 
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
@@ -56,6 +57,7 @@ app.use('/api', limiter);
 
 app.use(mongoSanitize());
 app.use(xss());
+app.use(cookieParser());
 
 // APIs
 
