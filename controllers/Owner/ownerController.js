@@ -111,6 +111,9 @@ exports.deleteOwner = catchAsync(async (req, res, next) => {
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   const currentOwner = await Owner.findById(decoded.id);
   if (currentOwner.id === req.params.id) {
+    for (var i = 0; i < currentOwner.places.length; i++) {
+      await Place.findByIdAndDelete(currentOwner.places[i]);
+    }
     const deleteOwner = await Owner.findByIdAndDelete(currentOwner.id);
     res.status(200).json({
       status: 'Success',
