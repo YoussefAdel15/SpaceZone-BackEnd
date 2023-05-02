@@ -7,6 +7,18 @@ const { check, validationResult } = require('express-validator');
 
 const router = express.Router();
 
+const startsWith = (value) => {
+  if (
+    !value.startsWith('012') ||
+    !value.startsWith('011') ||
+    !value.startsWith('015') ||
+    !value.startsWith('010')
+  ) {
+    throw new Error('The string must start with 011 or 012 or 010 or 015');
+  }
+  return true;
+};
+
 router.post(
   '/signupUser',
   [
@@ -18,11 +30,26 @@ router.post(
         'please enter your phone number (01*********) 11 digit phone number'
       ).isLength({ min: 11, max: 11 }),
       check(
+        'number',
+        'The string must start with 011 or 012 or 010 or 015'
+      ).custom(startsWith),
+      check(
         'password',
         'Please enter a password with at least 8 chars'
       ).isLength({
         min: 8,
       }),
+      check(
+        'password',
+        'Password must contain at least one lowercase letter'
+      ).matches(/[a-z]/),
+      check(
+        'password',
+        'Password must contain at least one uppercase letter'
+      ).matches(/[A-Z]/),
+      check('password', 'Password must contain at least one number').matches(
+        /\d/
+      ),
     ],
   ],
   authController.Signup
