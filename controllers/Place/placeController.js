@@ -79,6 +79,12 @@ exports.addFeedback = catchAsync(async (req, res, next) => {
         feedbackText: req.body.feedbackText,
         feedbackNumber: req.body.feedbackNumber,
       });
+      console.log(newFeedback);
+      console.log(place);
+      console.log(place.feedbacks);
+      place.feedbacks.push(newFeedback);
+      await place.save();
+      await newFeedback.save();
       res.status(200).json({
         status: 'Success',
         massage: `Feedback added to place with id ${place.id} from user with id ${currentUser.id}`,

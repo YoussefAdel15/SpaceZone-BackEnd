@@ -77,6 +77,15 @@ const placeSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  feedbacks: {
+    type: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'feedback',
+        select: true,
+      },
+    ],
+  },
 });
 
 module.exports = place = mongoose.model('place', placeSchema);
