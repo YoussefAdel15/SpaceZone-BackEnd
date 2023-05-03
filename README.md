@@ -14,7 +14,7 @@
 - npm install helmet
 - npm install express-mongo-sanitize
 - npm install xss-clean
-- npm insatall express-rate-limit
+- npm install express-rate-limit
 
 # Hosting URL
 

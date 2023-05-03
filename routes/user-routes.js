@@ -3,7 +3,7 @@ const express = require('express');
 const userController = require('./../controllers/User/userController');
 const authController = require('./../controllers/User/authController');
 // eslint-disable-next-line import/no-extraneous-dependencies, import/order
-const { check, validationResult } = require('express-validator');
+const { check } = require('express-validator');
 
 const router = express.Router();
 

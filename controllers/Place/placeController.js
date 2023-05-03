@@ -9,8 +9,9 @@ const Place = require('./../../Models/place');
 const catchAsync = require('./../../utils/catchAsync');
 const Owner = require('./../../Models/owner');
 const AppError = require('../../utils/appError');
-const place = require('./../../Models/place');
 const apiFeatures = require('./../../utils/apiFeatures');
+const Feedback = require('./../../Models/feedback');
+const User = require('./../../Models/user');
 
 exports.getAllPlaces = catchAsync(async (req, res, next) => {
   const features = new apiFeatures(Place.find(), req.query)
@@ -60,4 +61,33 @@ exports.editThisPlace = catchAsync(async (req, res, next) => {
     massage: `place ${req.params.id} has been updated successfully`,
     data: newPlace,
   });
+});
+
+exports.addFeedback = catchAsync(async (req, res, next) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const currentUser = await User.findById(decoded.id);
+  const place = await Place.findById(req.params.id);
+  if (!place) {
+    return next(new AppError('Place not found', 400));
+  } else {
+    const feedbackRate = [0, 1, 2, 3, 4, 5];
+    if (feedbackRate.includes(req.body.feedbackNumber)) {
+      const newFeedback = new Feedback({
+        placeID: place.id,
+        userID: currentUser.id,
+        feedbackText: req.body.feedbackText,
+        feedbackNumber: req.body.feedbackNumber,
+      });
+      res.status(200).json({
+        status: 'Success',
+        massage: `Feedback added to place with id ${place.id} from user with id ${currentUser.id}`,
+        data: newFeedback,
+      });
+    } else {
+      return next(
+        new AppError('feedback rate must be (0,1,2,3,4,5) only', 400)
+      );
+    }
+  }
 });
