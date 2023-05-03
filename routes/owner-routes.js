@@ -7,6 +7,16 @@ const { check, validationResult } = require('express-validator');
 
 const router = express.Router();
 
+/*
+
+Validations For The owner Signup
+1) userName Required
+2) valid Email
+3) phoneNumber start with (010,011,012,015) and 11 digits long
+4) password must be at least 8 characters (includes at least 1 lowercase , 1 uppercase and 1 digit)
+
+*/
+
 //SignUp For Owner
 router.post(
   '/signUpOwner',
@@ -14,16 +24,28 @@ router.post(
     [
       check('userName', 'Name is required').not().isEmpty(),
       check('email', 'please include a valid email').isEmail(),
-      check(
-        'number',
-        'please enter your phone number (01*********) 11 digit phone number'
-      ).isLength({ min: 11, max: 11 }),
+      check('number')
+        .matches(/^01[0125]\d{8}$/)
+        .withMessage(
+          'Phone number must start with 010, 011, 012, or 015 and be 11 digits long'
+        ),
       check(
         'password',
         'Please enter a password with at least 8 chars'
       ).isLength({
         min: 8,
       }),
+      check(
+        'password',
+        'Password must contain at least one lowercase letter'
+      ).matches(/[a-z]/),
+      check(
+        'password',
+        'Password must contain at least one uppercase letter'
+      ).matches(/[A-Z]/),
+      check('password', 'Password must contain at least one number').matches(
+        /\d/
+      ),
     ],
   ],
   authOwnerController.SignupOwner
