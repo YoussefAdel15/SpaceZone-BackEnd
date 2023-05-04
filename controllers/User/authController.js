@@ -1,15 +1,9 @@
-/* eslint-disable no-shadow */
-/* eslint-disable arrow-body-style */
-/* eslint-disable import/no-useless-path-segments */
 const { promisify } = require('util');
 const User = require('../../Models/user');
-// eslint-disable-next-line import/order
 const crypto = require('crypto');
 const catchAsync = require('./../../utils/catchAsync');
 const AppError = require('./../../utils/appError');
-// eslint-disable-next-line import/no-extraneous-dependencies, import/order
-const { check, validationResult } = require('express-validator');
-// eslint-disable-next-line import/order
+const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('./../../utils/email');
 

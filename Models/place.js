@@ -1,6 +1,3 @@
-/* eslint-disable import/no-useless-path-segments */
-/* eslint-disable no-undef */
-/* eslint-disable no-multi-assign */
 const mongoose = require('mongoose');
 const AppError = require('./../utils/appError');
 

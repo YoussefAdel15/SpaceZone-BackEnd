@@ -1,4 +1,3 @@
-/* eslint-disable import/no-useless-path-segments */
 const express = require('express');
 const placeController = require('./../controllers/Place/placeController');
 const authOwnerController = require('./../controllers/Owner/authOwnerController');
