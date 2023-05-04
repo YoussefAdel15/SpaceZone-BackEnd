@@ -17,6 +17,7 @@ router
   .route('/editThisPlace/:id')
   .patch(authOwnerController.protect, placeController.editThisPlace);
 
+//ADD FEEDBACK BY THE USER
 router
   .route('/addFeedback/:id')
   .post(
@@ -24,4 +25,40 @@ router
     authController.restrictTo('User', 'Admin'),
     placeController.addFeedback
   );
+
+//GET FEEDBACKS FOR A SPECIFIC PLACE
+router.route('/getFeedBacks/:id').get(placeController.getFeedbackByPlace);
+
+//ADD PRODUCT FOR A PLACE
+router
+  .route('/addProducts/:id')
+  .post(
+    authOwnerController.protect,
+    authOwnerController.restrictTo('Owner', 'Admin'),
+    placeController.addProduct
+  );
+
+//GET PLACE PRODUCTS
+router.route('/getProducts/:id').get(placeController.getProducts);
+
+//ADD OFFER
+router
+  .route('/addOffer/:id')
+  .post(
+    authOwnerController.protect,
+    authOwnerController.restrictTo('Owner', 'Admin'),
+    placeController.addOffer
+  );
+
+//GET ALL OFFERS
+router
+  .route('/getOffers/:id')
+  .get(
+    authOwnerController.protect,
+    authOwnerController.restrictTo('Owner', 'Admin'),
+    placeController.getOffers
+  );
+
+//GLOBAL OFFER
+
 module.exports = router;

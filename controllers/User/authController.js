@@ -77,6 +77,15 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+// logout
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ status: 'success' });
+};
+
 //Forget Password
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get user based on posted email

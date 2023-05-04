@@ -12,6 +12,8 @@ const AppError = require('../../utils/appError');
 const apiFeatures = require('./../../utils/apiFeatures');
 const Feedback = require('./../../Models/feedback');
 const User = require('./../../Models/user');
+const Product = require('./../../Models/products');
+const Offer = require('./../../Models/offer');
 
 exports.getAllPlaces = catchAsync(async (req, res, next) => {
   const features = new apiFeatures(Place.find(), req.query)
@@ -64,33 +66,115 @@ exports.editThisPlace = catchAsync(async (req, res, next) => {
 });
 
 exports.addFeedback = catchAsync(async (req, res, next) => {
-  const token = req.headers.authorization.split(' ')[1];
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  const currentUser = await User.findById(decoded.id);
+  const currentUser = await User.findById(req.user.id);
   const place = await Place.findById(req.params.id);
   if (!place) {
     return next(new AppError('Place not found', 400));
   } else {
-    const feedbackRate = [0, 1, 2, 3, 4, 5];
-    if (feedbackRate.includes(req.body.feedbackNumber)) {
-      const newFeedback = new Feedback({
-        placeID: place.id,
-        userID: currentUser.id,
-        feedbackText: req.body.feedbackText,
-        feedbackNumber: req.body.feedbackNumber,
-      });
-      place.feedbacks.push(newFeedback);
-      await place.save();
-      await newFeedback.save();
-      res.status(200).json({
-        status: 'Success',
-        massage: `Feedback added to place with id ${place.id} from user with id ${currentUser.id}`,
-        data: newFeedback,
-      });
-    } else {
-      return next(
-        new AppError('feedback rate must be (0,1,2,3,4,5) only', 400)
-      );
-    }
+    const newFeedback = new Feedback({
+      placeID: place.id,
+      userID: currentUser.id,
+      feedbackText: req.body.feedbackText,
+      feedbackNumber: req.body.feedbackNumber,
+    });
+    place.feedbacks.push(newFeedback);
+    await place.save();
+    await newFeedback.save();
+    res.status(200).json({
+      status: 'Success',
+      massage: `Feedback added to place with id ${place.id} from user with id ${currentUser.id}`,
+      data: newFeedback,
+    });
+  }
+});
+
+exports.getFeedbackByPlace = catchAsync(async (req, res, next) => {
+  const currentPlace = await Place.findById(req.params.id);
+  if (!currentPlace) {
+    return next(new AppError('Place not found', 400));
+  } else {
+    const feedbackDetails = await Feedback.find({ placeID: currentPlace.id });
+    res.status(200).json({
+      status: 'Success',
+      massage: `feedbacks for place ${req.params.id} has been found successfully`,
+      data: feedbackDetails,
+    });
+  }
+});
+
+exports.addProduct = catchAsync(async (req, res, next) => {
+  const currentOwner = await Owner.findById(req.owner.id);
+  const place = await Place.findById(req.params.id);
+  const places = currentOwner.places;
+  const reqID = mongoose.Types.ObjectId(req.params.id);
+  const DoesBelong = await places.find((place) => place._id.equals(reqID));
+  if (!DoesBelong) {
+    return next(new AppError('This Place Does not Belong to you', 401));
+  } else {
+    const newProduct = new Product({
+      placeID: place.id,
+      productName: req.body.productName,
+      price: req.body.price,
+    });
+    place.products.push(newProduct);
+    await place.save();
+    await newProduct.save();
+    res.status(200).json({
+      status: 'Success',
+      massage: `product ${newProduct.productName} added to place with id ${place.id} with price of ${newProduct.price}EGP`,
+      data: newProduct,
+    });
+  }
+});
+
+exports.getProducts = catchAsync(async (req, res, next) => {
+  const currentPlace = await Place.findById(req.params.id);
+  if (!currentPlace) {
+    return next(new AppError('Place not found', 400));
+  } else {
+    const productsDetails = await Product.find({ placeID: currentPlace.id });
+    res.status(200).json({
+      status: 'Success',
+      massage: `products for place ${req.params.id} has been found successfully`,
+      data: productsDetails,
+    });
+  }
+});
+
+exports.addOffer = catchAsync(async (req, res, next) => {
+  const currentOwner = await Owner.findById(req.owner.id);
+  const place = await Place.findById(req.params.id);
+  const places = currentOwner.places;
+  const reqID = mongoose.Types.ObjectId(req.params.id);
+  const DoesBelong = await places.find((place) => place._id.equals(reqID));
+  if (!DoesBelong) {
+    return next(new AppError('This Place Does not Belong to you', 401));
+  } else {
+    const newOffer = new Offer({
+      placeID: place.id,
+      offerValue: req.body.offerValue,
+    });
+    place.offers.push(newOffer);
+    await place.save();
+    await newOffer.save();
+    res.status(200).json({
+      status: 'Success',
+      massage: `offer with value of ${newOffer.offerValue}EGP added to place with id ${place.id}`,
+      data: newOffer,
+    });
+  }
+});
+
+exports.getOffers = catchAsync(async (req, res, next) => {
+  const currentPlace = await Place.findById(req.params.id);
+  if (!currentPlace) {
+    return next(new AppError('Place not found', 400));
+  } else {
+    const offersDetails = await Offer.find({ placeID: currentPlace.id });
+    res.status(200).json({
+      status: 'Success',
+      massage: `offers for place ${req.params.id} has been found successfully`,
+      data: offersDetails,
+    });
   }
 });

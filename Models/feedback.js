@@ -18,6 +18,8 @@ const feedbackSchema = new mongoose.Schema({
   feedbackNumber: {
     type: Number,
     required: [true, 'feedback Must Have rate'],
+    max: 5,
+    min: 0,
   },
 });
 

@@ -86,6 +86,24 @@ const placeSchema = new mongoose.Schema({
       },
     ],
   },
+  products: {
+    type: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'products',
+        select: true,
+      },
+    ],
+  },
+  offers: {
+    type: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'offers',
+        select: true,
+      },
+    ],
+  },
 });
 
 module.exports = place = mongoose.model('place', placeSchema);
