@@ -9,7 +9,7 @@ const feedbackSchema = new mongoose.Schema({
   userID: {
     type: mongoose.Schema.ObjectId,
     ref: 'users',
-    select: false,
+    select: true,
   },
   feedbackText: {
     type: String,

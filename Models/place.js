@@ -1,6 +1,17 @@
 const mongoose = require('mongoose');
 const AppError = require('./../utils/appError');
 
+const seatSchema = new mongoose.Schema({
+  setNumber: {
+    type: Number,
+    required: true,
+  },
+  isOccupied: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const placeSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.ObjectId,
@@ -52,23 +63,32 @@ const placeSchema = new mongoose.Schema({
   roomPrice: {
     type: Number,
   },
-  numberOfSeats: {
+  numberOfSets: {
     type: Number,
     required: [true, 'Please Enter number of Seats in your WorkingSpace'],
   },
+  sets: [seatSchema],
   numberOfRooms: {
     type: Number,
   },
-  //   products:{
-  //     type
-  //   },
+  // rooms: [roomSchema],
   openTime: {
-    type: Date,
-    //required: [true, 'please enter the starting time of your WorkingSpace'],
+    type: Number,
+    required: [
+      true,
+      'please enter the starting time of your WorkingSpace in 24h form (1am to 24pm)',
+    ],
+    min: 1,
+    max: 24,
   },
   closeTime: {
-    type: Date,
-    //required: [true, 'Please Enter your closing time'],
+    type: Number,
+    required: [
+      true,
+      'please enter the close time of your WorkingSpace in 24h form (1am to 24pm)',
+    ],
+    min: 1,
+    max: 24,
   },
   available: {
     type: Boolean,
