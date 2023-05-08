@@ -4,6 +4,7 @@ const userController = require('./../controllers/User/userController');
 const authController = require('./../controllers/User/authController');
 // eslint-disable-next-line import/no-extraneous-dependencies, import/order
 const { check } = require('express-validator');
+const twilio = require('./../utils/twilio');
 
 const router = express.Router();
 
@@ -75,4 +76,8 @@ router
   );
 
 router.route('/logout').post(authController.logOut);
+
+router.post('/phone/send-otp', authController.protect, twilio.sendOTP);
+router.post('/phone/verify-otp', authController.protect, twilio.verifyOTP);
+
 module.exports = router;
