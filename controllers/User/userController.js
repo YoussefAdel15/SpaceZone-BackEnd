@@ -59,7 +59,7 @@ exports.updateUser = catchAsync(async (req, res, next) => {
     );
     res.status(200).json({
       status: 'Success',
-      message: `Owner ${req.params.id} has been UPDATED successfully`,
+      message: `User ${req.params.id} has been UPDATED successfully`,
       data: currentUserUpdated,
     });
   } else {

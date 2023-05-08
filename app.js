@@ -64,6 +64,7 @@ app.use(cookieParser());
 app.use('/api/user', require('./routes/user-routes'));
 app.use('/api/owner', require('./routes/owner-routes'));
 app.use('/api/places', require('./routes/places-routes'));
+app.use('/api/', require('./routes/contactUs-routes'));
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
