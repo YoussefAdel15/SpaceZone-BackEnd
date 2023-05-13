@@ -45,7 +45,10 @@ app.use((req, res, next) => {
 
 app.use(
   cors({
-    origin: 'https://eszed.vercel.app',
+    origin: [
+      // 'https://eszed.vercel.app',
+      'http://localhost:3000',
+    ],
     credentials: true,
     optionSuccessStatus: 200,
   })
