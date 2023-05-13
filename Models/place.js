@@ -1,8 +1,26 @@
 const mongoose = require('mongoose');
 const AppError = require('./../utils/appError');
 
+const daysSchema = new mongoose.Schema({
+  date: { type: Date },
+  Hours : [{
+    type : Boolean,
+  }]
+});
+
 const seatSchema = new mongoose.Schema({
-  setNumber: {
+  seatNumber: {
+    type: Number,
+    required: true,
+  },
+  days: [daysSchema],
+  isOccupied: {
+    type: Boolean,
+    default: false,
+  },
+});
+const roomSchema = new mongoose.Schema({
+  roomNumber: {
     type: Number,
     required: true,
   },
@@ -63,13 +81,19 @@ const placeSchema = new mongoose.Schema({
   roomPrice: {
     type: Number,
   },
+  numberOfRooms: {
+    type: Number,
+  },
   numberOfSets: {
     type: Number,
     required: [true, 'Please Enter number of Seats in your WorkingSpace'],
   },
   sets: [seatSchema],
-  numberOfRooms: {
-    type: Number,
+  availableFor: {
+    type: String,
+    enum: ['weekly', 'monthly'],
+    default: 'weekly',
+    required: true,
   },
   // rooms: [roomSchema],
   openTime: {

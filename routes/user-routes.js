@@ -80,4 +80,11 @@ router.route('/logout').post(authController.logOut);
 router.post('/phone/send-otp', authController.protect, twilio.sendOTP);
 router.post('/phone/verify-otp', authController.protect, twilio.verifyOTP);
 
+router.get(
+  '/me',
+  authController.protect,
+  userController.getMe,
+  userController.getUser
+);
+
 module.exports = router;

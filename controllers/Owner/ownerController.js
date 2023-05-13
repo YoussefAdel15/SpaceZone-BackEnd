@@ -53,6 +53,17 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     closeTime: req.body.closeAt,
     owner: currentOwner.id,
   });
+  const currentDate = new Date();
+  const datesArray = [currentDate];
+  for (let i = 0; i < newPlace.numberOfSets; i++) {
+    newPlace.sets.push(
+      new Seat({
+        seatNumber: i
+      })
+    );
+  }
+  if(newPlace.availableFor)
+  // for(let i = 0 ; i<=7)
   await newPlace.save();
   currentOwner.places.push(newPlace);
   await currentOwner.save();

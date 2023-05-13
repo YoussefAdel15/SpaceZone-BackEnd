@@ -18,6 +18,11 @@ exports.getAllUsers = catchAsync(async (req, res) => {
   });
 });
 
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user._id;
+  next();
+};
+
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });
 
@@ -30,13 +35,9 @@ exports.getUser = catchAsync(async (req, res, next) => {
   const token = req.headers.authorization.split(' ')[1];
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   const currentUser = await User.findById(decoded.id);
-
+  console.log(req.params.id);
   if (!currentUser) {
     return next(new AppError('User not found', 404));
-  }
-
-  if (currentUser._id.toString() !== req.params.id) {
-    return next(new AppError('This account does not belong to you', 401));
   }
 
   res.status(200).json({
