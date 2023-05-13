@@ -40,6 +40,7 @@ app.use(
       'http://localhost:3000',
       'http://localhost:5000',
       'http://localhost:8000',
+      'https://eszed.vercel.app/'
     ],
     credentials: true,
     optionSuccessStatus: 200,
