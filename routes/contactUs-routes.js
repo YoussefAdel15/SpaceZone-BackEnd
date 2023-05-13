@@ -8,13 +8,13 @@ router.post(
   '/sendContactUsForm',
   [
     [
-      check('Email', 'please include a valid email').isEmail(),
-      check('Phone')
+      check('email', 'please include a valid email').isEmail(),
+      check('phone')
         .matches(/^01[0125]\d{8}$/)
         .withMessage(
           'Phone number must start with 010, 011, 012, or 015 and be 11 digits long'
         ),
-      check('Message', 'Please enter the message body').not().isEmpty(),
+      check('message', 'Please enter the message body').not().isEmpty(),
     ],
   ],
   contactUsController.sendContactUs

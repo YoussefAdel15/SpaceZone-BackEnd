@@ -14,10 +14,10 @@ exports.sendContactUs = catchAsync(async (req, res, next) => {
     return res.status(400).json({ errors: errors.array() });
   }
   const contactUsForm = await ContactUs.create({
-    Name: req.body.Name,
-    Email: req.body.Email,
-    Phone: req.body.Phone,
-    Message: req.body.Message,
+    name: req.body.name,
+    email: req.body.email,
+    phone: req.body.phone,
+    message: req.body.message,
   });
   res.status(200).json({
     status: 'success',
