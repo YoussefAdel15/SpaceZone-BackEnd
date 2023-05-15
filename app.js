@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const express = require('express');
 const morgan = require('morgan');
-const cors = require('cors');
+// const cors = require('cors');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
