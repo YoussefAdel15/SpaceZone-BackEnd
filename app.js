@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const express = require('express');
 const morgan = require('morgan');
-// const cors = require('cors');
+const cors = require('cors');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
@@ -9,7 +9,6 @@ const xss = require('xss-clean');
 const cookieParser = require('cookie-parser');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
-const cors = require('./coresHandel');
 
 const app = express();
 
@@ -44,13 +43,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use(
-//   cors({
-//     origin: 'https://eszed.vercel.app',
-//     credentials: true,
-//     optionSuccessStatus: 200,
-//   })
-// );
+app.use(
+  cors({
+    origin: '*',
+    optionSuccessStatus: 200,
+  })
+);
 
 app.use(cors());
 
