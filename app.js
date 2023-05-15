@@ -9,6 +9,7 @@ const xss = require('xss-clean');
 const cookieParser = require('cookie-parser');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
+const cors = require('./coresHandel');
 
 const app = express();
 
@@ -43,13 +44,15 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(
-  cors({
-    origin: 'https://eszed.vercel.app',
-    credentials: true,
-    optionSuccessStatus: 200,
-  })
-);
+// app.use(
+//   cors({
+//     origin: 'https://eszed.vercel.app',
+//     credentials: true,
+//     optionSuccessStatus: 200,
+//   })
+// );
+
+app.use(cors());
 
 const limiter = rateLimit({
   max: 100,
