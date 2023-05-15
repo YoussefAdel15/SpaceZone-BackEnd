@@ -14,12 +14,10 @@ const app = express();
 
 // 1) MIDDLEWARES
 
-app.use(
-  cors({
-    origin: 'https://eszed.vercel.app',
-    methods: '*',
-  })
-);
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+});
 
 app.use(helmet());
 
