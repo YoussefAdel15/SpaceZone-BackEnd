@@ -14,7 +14,13 @@ const app = express();
 
 // 1) MIDDLEWARES
 
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://eszed.vercel.app/',
+    credentials: true,
+    optionSuccessStatus: 200,
+  })
+);
 
 app.use(helmet());
 
