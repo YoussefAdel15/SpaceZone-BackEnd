@@ -14,6 +14,8 @@ const app = express();
 
 // 1) MIDDLEWARES
 
+app.options('*', cors());
+
 app.use(helmet());
 
 if (process.env.NODE_ENV === 'development') {
@@ -43,7 +45,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors());
+// app.use(cors());
 
 const limiter = rateLimit({
   max: 100,
