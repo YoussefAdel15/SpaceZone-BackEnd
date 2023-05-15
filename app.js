@@ -16,9 +16,13 @@ const app = express();
 
 app.use(
   cors({
-    origin: '*/*',
+    origin: 'https://eszed.vercel.app', // Update with your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Add the necessary methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Add the necessary headers
+    credentials: true, // Allow sending cookies
   })
 );
+
 
 app.use(helmet());
 
@@ -32,19 +36,6 @@ app.use(express.static(`${__dirname}/public`));
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   console.log(req.headers);
-
-  next();
-});
-
-app.enable('trust proxy');
-
-app.use((req, res, next) => {
-  res.set({
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': '*',
-    'Access-Control-Allow-Headers':
-      "'Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token'",
-  });
 
   next();
 });
