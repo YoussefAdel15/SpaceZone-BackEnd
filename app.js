@@ -14,7 +14,7 @@ const app = express();
 
 // 1) MIDDLEWARES
 
-app.options('*', cors());
+app.use(cors());
 
 app.use(helmet());
 
@@ -44,8 +44,6 @@ app.use((req, res, next) => {
 
   next();
 });
-
-// app.use(cors());
 
 const limiter = rateLimit({
   max: 100,
