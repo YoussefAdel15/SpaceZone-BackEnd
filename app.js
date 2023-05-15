@@ -16,9 +16,8 @@ const app = express();
 
 app.use(
   cors({
-    origin: 'https://eszed.vercel.app/',
-    credentials: true,
-    optionSuccessStatus: 200,
+    origin: '*',
+    methods: '*',
   })
 );
 
