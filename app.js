@@ -43,13 +43,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(
-  cors({
-    origin: '*',
-    optionSuccessStatus: 200,
-  })
-);
-
 app.use(cors());
 
 const limiter = rateLimit({
