@@ -98,4 +98,12 @@ router
     ownerController.updateOwner
   );
 
+router.route('/me').get(authOwnerController.protect, ownerController.getMe);
+router
+  .route('/updateMe')
+  .patch(authOwnerController.protect, ownerController.updateMe);
+router
+  .route('/deleteMe')
+  .delete(authOwnerController.protect, ownerController.deleteMe);
+
 module.exports = router;

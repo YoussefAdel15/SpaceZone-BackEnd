@@ -2,10 +2,9 @@ const mongoose = require('mongoose');
 const AppError = require('./../utils/appError');
 
 const daysSchema = new mongoose.Schema({
-  date: { type: Date },
-  Hours : [{
-    type : Boolean,
-  }]
+  date: { type: Date, required: true },
+  hours: { type: [Boolean] },
+  // if false then the seat is available
 });
 
 const seatSchema = new mongoose.Schema({
@@ -84,35 +83,35 @@ const placeSchema = new mongoose.Schema({
   numberOfRooms: {
     type: Number,
   },
-  numberOfSets: {
+  numberOfSeats: {
     type: Number,
     required: [true, 'Please Enter number of Seats in your WorkingSpace'],
   },
-  sets: [seatSchema],
+  seats: [seatSchema],
   availableFor: {
     type: String,
     enum: ['weekly', 'monthly'],
     default: 'weekly',
-    required: true,
   },
   // rooms: [roomSchema],
-  openTime: {
-    type: Number,
-    required: [
-      true,
-      'please enter the starting time of your WorkingSpace in 24h form (1am to 24pm)',
+  openingHours: {
+    type: [
+      {
+    /*Days are (
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday')*/
+        day: { type: String, required: true },
+        openTime: { type: Number },
+        closeTime: { type: Number },
+        closed: { type: Boolean, default: false },
+      },
     ],
-    min: 1,
-    max: 24,
-  },
-  closeTime: {
-    type: Number,
-    required: [
-      true,
-      'please enter the close time of your WorkingSpace in 24h form (1am to 24pm)',
-    ],
-    min: 1,
-    max: 24,
+    required: true,
   },
   available: {
     type: Boolean,

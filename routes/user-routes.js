@@ -57,23 +57,23 @@ router.patch('/resetPasswordUser/:token', authController.resetPassword);
 
 router.route('/').get(userController.getAllUsers);
 
-router
-  .route('/:id')
-  .get(
-    authController.protect,
-    authController.restrictTo('User', 'Admin'),
-    userController.getUser
-  )
-  .patch(
-    authController.protect,
-    authController.restrictTo('User', 'Admin'),
-    userController.updateUser
-  )
-  .delete(
-    authController.protect,
-    authController.restrictTo('User', 'Admin'),
-    userController.deleteUser
-  );
+// router
+//   .route('/:id')
+//   .get(
+//     authController.protect,
+//     authController.restrictTo('User', 'Admin'),
+//     userController.getUser
+//   )
+//   .patch(
+//     authController.protect,
+//     authController.restrictTo('User', 'Admin'),
+//     userController.updateUser
+//   )
+//   .delete(
+//     authController.protect,
+//     authController.restrictTo('User', 'Admin'),
+//     userController.deleteUser
+//   );
 
 router.route('/logout').post(authController.logOut);
 
@@ -86,5 +86,7 @@ router.get(
   userController.getMe,
   userController.getUser
 );
+router.patch('/updateMe', authController.protect, userController.updateMe);
+router.delete('/deleteMe', authController.protect, userController.deleteMe);
 
 module.exports = router;

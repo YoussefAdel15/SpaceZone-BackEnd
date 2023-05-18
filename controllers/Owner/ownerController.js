@@ -23,12 +23,25 @@ exports.getAllOwners = catchAsync(async (req, res) => {
   });
 });
 
+exports.getMe = catchAsync(async (req, res, next) => {
+  req.params.id = req.owner._id;
+  next();
+});
+
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await Owner.findByIdAndUpdate(req.owner.id, { active: false });
 
   res.status(204).json({
     status: 'success',
     data: null,
+  });
+});
+
+exports.updateMe = catchAsync(async (req, res, next) => {
+  await Owner.findByIdAndUpdate(req.owner.id, req.body, { new: true });
+  res.status(200).json({
+    status: 'Success',
+    message: `Owner ${req.owner.id} has been UPDATED successfully`,
   });
 });
 
@@ -49,21 +62,168 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     roomHourPrice: req.body.roomHourPrice,
     numberOfSeats: req.body.numberOfSeats,
     numberOfRooms: req.body.numberOfRooms,
-    openTime: req.body.openAt,
-    closeTime: req.body.closeAt,
+    openingHours: req.body.openingHours,
     owner: currentOwner.id,
   });
   const currentDate = new Date();
   const datesArray = [currentDate];
-  for (let i = 0; i < newPlace.numberOfSets; i++) {
-    newPlace.sets.push(
-      new Seat({
-        seatNumber: i
-      })
-    );
+  for (let i = 0; i < newPlace.numberOfSeats; i++) {
+    const seat = {
+      seatNumber: i + 1,
+    };
+    newPlace.seats.push(seat);
   }
-  if(newPlace.availableFor)
-  // for(let i = 0 ; i<=7)
+
+  const daysOfWeek = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+  if (newPlace.availableFor === 'weekly') {
+    for (let i = 1; i < 7; i++) {
+      const newDate = new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000);
+      datesArray.push(newDate);
+    }
+
+    for (let j = 0; j < newPlace.numberOfSeats; j++) {
+      for (const date of datesArray) {
+        let activeHours;
+        let hours = [];
+        switch (date.getDay()) {
+          case 0:
+            if (newPlace.openingHours[0].closed === false) {
+              activeHours =
+                newPlace.openingHours[0].closeTime -
+                newPlace.openingHours[0].openTime;
+            }
+            break;
+          case 1:
+            if (newPlace.openingHours[1].closed === false) {
+              activeHours =
+                newPlace.openingHours[1].closeTime -
+                newPlace.openingHours[1].openTime;
+            }
+            break;
+          case 2:
+            if (newPlace.openingHours[2].closed === false) {
+              activeHours =
+                newPlace.openingHours[2].closeTime -
+                newPlace.openingHours[2].openTime;
+            }
+            break;
+          case 3:
+            if (newPlace.openingHours[3].closed === false) {
+              activeHours =
+                newPlace.openingHours[3].closeTime -
+                newPlace.openingHours[3].openTime;
+            }
+            break;
+          case 4:
+            if (newPlace.openingHours[4].closed === false) {
+              activeHours =
+                newPlace.openingHours[4].closeTime -
+                newPlace.openingHours[4].openTime;
+            }
+            break;
+          case 5:
+            if (newPlace.openingHours[5].closed === false) {
+              activeHours =
+                newPlace.openingHours[5].closeTime -
+                newPlace.openingHours[5].openTime;
+            }
+            break;
+          case 6:
+            if (newPlace.openingHours[6].closed === false) {
+              activeHours =
+                newPlace.openingHours[6].closeTime -
+                newPlace.openingHours[6].openTime;
+            }
+            break;
+          default:
+            console.log('Invalid day');
+            break;
+        }
+        for (let i = 0; i < activeHours; i++) {
+          hours.push(false);
+        }
+        newPlace.seats[j].days.push({ date, hours });
+      }
+    }
+  } else if (newPlace.availableFor === 'monthly') {
+    for (let i = 1; i < 30; i++) {
+      const newDate = new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000);
+      datesArray.push(newDate);
+    }
+
+    for (let j = 0; j < newPlace.numberOfSeats; j++) {
+      for (const date of datesArray) {
+        let activeHours;
+        let hours = [];
+        switch (date.getDay()) {
+          case 0:
+            if (newPlace.openingHours[0].closed === false) {
+              activeHours =
+                newPlace.openingHours[0].closeTime -
+                newPlace.openingHours[0].openTime;
+            }
+            break;
+          case 1:
+            if (newPlace.openingHours[1].closed === false) {
+              activeHours =
+                newPlace.openingHours[1].closeTime -
+                newPlace.openingHours[1].openTime;
+            }
+            break;
+          case 2:
+            if (newPlace.openingHours[2].closed === false) {
+              activeHours =
+                newPlace.openingHours[2].closeTime -
+                newPlace.openingHours[2].openTime;
+            }
+            break;
+          case 3:
+            if (newPlace.openingHours[3].closed === false) {
+              activeHours =
+                newPlace.openingHours[3].closeTime -
+                newPlace.openingHours[3].openTime;
+            }
+            break;
+          case 4:
+            if (newPlace.openingHours[4].closed === false) {
+              activeHours =
+                newPlace.openingHours[4].closeTime -
+                newPlace.openingHours[4].openTime;
+            }
+            break;
+          case 5:
+            if (newPlace.openingHours[5].closed === false) {
+              activeHours =
+                newPlace.openingHours[5].closeTime -
+                newPlace.openingHours[5].openTime;
+            }
+            break;
+          case 6:
+            if (newPlace.openingHours[6].closed === false) {
+              activeHours =
+                newPlace.openingHours[6].closeTime -
+                newPlace.openingHours[6].openTime;
+            }
+            break;
+          default:
+            console.log('Invalid day');
+            break;
+        }
+        for (let i = 0; i < activeHours; i++) {
+          hours.push(false);
+        }
+        newPlace.seats[j].days.push({ date, hours });
+      }
+    }
+  }
   await newPlace.save();
   currentOwner.places.push(newPlace);
   await currentOwner.save();
@@ -80,10 +240,6 @@ exports.getOwner = catchAsync(async (req, res, next) => {
 
   if (!currentOwner) {
     return next(new AppError('User not found', 404));
-  }
-
-  if (currentOwner._id.toString() !== req.params.id) {
-    return next(new AppError('This account does not belong to you', 401));
   }
 
   res.status(200).json({
