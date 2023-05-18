@@ -14,7 +14,14 @@ const app = express();
 
 // 1) MIDDLEWARES
 
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://eszed.vercel.app/*', // Update with your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Add the necessary methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Add the necessary headers
+    credentials: true, // Allow sending cookies
+  })
+);
 
 app.use(helmet());
 
