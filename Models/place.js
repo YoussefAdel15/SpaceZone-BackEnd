@@ -3,7 +3,11 @@ const AppError = require('./../utils/appError');
 
 const daysSchema = new mongoose.Schema({
   date: { type: Date, required: true },
-  hours: { type: [Boolean] },
+  hours: {
+    type: {
+      [Number]: Boolean,
+    },
+  },
   // if false then the seat is available
 });
 

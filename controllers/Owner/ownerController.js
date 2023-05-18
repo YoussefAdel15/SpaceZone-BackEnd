@@ -92,7 +92,16 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     for (let j = 0; j < newPlace.numberOfSeats; j++) {
       for (const date of datesArray) {
         let activeHours;
-        let hours = [];
+        function Hours() {
+          this.array = {};
+          this.length = 0;
+        }
+        // CustomArray method to push an element with a custom index
+        Hours.prototype.push = function (index, Boolean) {
+          this.array[index] = Boolean;
+          this.length++;
+        };
+        var hours = new Hours();
         switch (date.getDay()) {
           case 0:
             if (newPlace.openingHours[0].closed === false) {
@@ -148,7 +157,7 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
             break;
         }
         for (let i = 0; i < activeHours; i++) {
-          hours.push(false);
+          hours.push(newPlace.openingHours[date.getDay()].openTime + i, false);
         }
         newPlace.seats[j].days.push({ date, hours });
       }
@@ -162,7 +171,16 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     for (let j = 0; j < newPlace.numberOfSeats; j++) {
       for (const date of datesArray) {
         let activeHours;
-        let hours = [];
+        function Hours() {
+          this.array = {};
+          this.length = 0;
+        }
+        // CustomArray method to push an element with a custom index
+        Hours.prototype.push = function (index, value) {
+          this.array[index] = value;
+          this.length++;
+        };
+        var hours = new Hours();
         switch (date.getDay()) {
           case 0:
             if (newPlace.openingHours[0].closed === false) {
@@ -218,7 +236,8 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
             break;
         }
         for (let i = 0; i < activeHours; i++) {
-          hours.push(false);
+          console.log(customArray.array);
+          hours.push(newPlace.openingHours[date.getDay()].openTime + i, false);
         }
         newPlace.seats[j].days.push({ date, hours });
       }
