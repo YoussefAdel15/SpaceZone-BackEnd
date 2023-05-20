@@ -25,6 +25,23 @@ router
     placeController.addFeedback
   );
 
+  //delete FEEDBACK BY THE USER
+router
+.route('/deleteFeedback/:id')
+.delete(
+  authController.protect,
+  authController.restrictTo('User', 'Admin'),
+  placeController.deleteFeedback
+);
+
+//UPDATE FEEDBACK BY THE USER
+router
+.route('/updateFeedback/:id')
+.patch(
+  authController.protect,
+  authController.restrictTo('User', 'Admin'),
+  placeController.updateFeedback
+);
 //GET FEEDBACKS FOR A SPECIFIC PLACE
 router.route('/getFeedBacks/:id').get(placeController.getFeedbackByPlace);
 
@@ -37,6 +54,23 @@ router
     placeController.addProduct
   );
 
+//delete PRODUCT FOR A PLACE
+router
+.route('/deleteProducts/:id')
+.delete(
+  authOwnerController.protect,
+  authOwnerController.restrictTo('Owner', 'Admin'),
+  placeController.deleteProduct
+);
+
+//update PRODUCT FOR A PLACE
+router
+  .route('/updateProducts/:id')
+  .patch(
+    authOwnerController.protect,
+    authOwnerController.restrictTo('Owner', 'Admin'),
+    placeController.updateProduct
+  );
 //GET PLACE PRODUCTS
 router.route('/getProducts/:id').get(placeController.getProducts);
 
@@ -47,6 +81,24 @@ router
     authOwnerController.protect,
     authOwnerController.restrictTo('Owner', 'Admin'),
     placeController.addOffer
+  );
+
+  //delete OFFER
+router
+.route('/deleteOffer/:id')
+.delete(
+  authOwnerController.protect,
+  authOwnerController.restrictTo('Owner', 'Admin'),
+  placeController.deleteOffer
+);
+
+//update OFFER
+router
+  .route('/updateOffer/:id')
+  .patch(
+    authOwnerController.protect,
+    authOwnerController.restrictTo('Owner', 'Admin'),
+    placeController.updateOffer
   );
 
 //GET ALL OFFERS

@@ -14,6 +14,7 @@ const Feedback = require('./../../Models/feedback');
 const User = require('./../../Models/user');
 const Product = require('./../../Models/products');
 const Offer = require('./../../Models/offer');
+const { findByIdAndDelete } = require('./../../Models/place');
 
 exports.getAllPlaces = catchAsync(async (req, res, next) => {
   const features = new apiFeatures(Place.find(), req.query)
@@ -88,6 +89,53 @@ exports.addFeedback = catchAsync(async (req, res, next) => {
   }
 });
 
+exports.updateFeedback = catchAsync(async (req, res, next) => {
+  const currentUser = await User.findById(req.user.id);
+  const place = await Place.findById(req.params.id);
+  if (!place) {
+    return next(new AppError('Place not found', 400));
+  } else {
+    const feedback = place.feedbacks.find((f) => f.id === req.params.feedbackId);
+    if (!feedback) {
+      return next(new AppError('Feedback not found', 404));
+    }
+
+    feedback.feedbackText = req.body.feedbackText;
+    feedback.feedbackNumber = req.body.feedbackNumber;
+    
+    await place.save();
+    res.status(200).json({
+      status: 'Success',
+      message: `Feedback updated for place with id ${place.id} from user with id ${currentUser.id}`,
+      data: feedback,
+    });
+  }
+});
+exports.deleteFeedback = catchAsync(async (req, res, next) => {
+  const currentUser = await User.findById(req.user.id);
+  const feedback = await Feedback.findById(req.params.id);
+  if (!Feedback) {
+    return next(new AppError('Feedback not found', 400));
+  } else {
+
+    if(currentUser.id == feedback.userID){
+      console.log(feedback)
+      const place = await Place.findById(feedback.placeID)
+      placeFeedbackDelete = await place.feedbacks.find(async(e)=> await findByIdAndDelete(e._id))
+      await Feedback.findByIdAndDelete(feedback.id)
+      await place.save();
+    }
+    
+    // Remove the feedback from the array
+    res.status(200).json({
+      status: 'Success',
+      message: `Feedback deleted for place with id ${place.id} from user with id ${currentUser.id}`,
+      data: null,
+    });
+  }
+});
+
+
 exports.getFeedbackByPlace = catchAsync(async (req, res, next) => {
   const currentPlace = await Place.findById(req.params.id);
   if (!currentPlace) {
@@ -127,6 +175,65 @@ exports.addProduct = catchAsync(async (req, res, next) => {
   }
 });
 
+exports.updateProduct = catchAsync(async (req, res, next) => {
+  const currentOwner = await Owner.findById(req.owner.id);
+  const place = await Place.findById(req.params.id);
+  const places = currentOwner.places;
+  const reqID = mongoose.Types.ObjectId(req.params.id);
+  const doesBelong = await places.find((place) => place._id.equals(reqID));
+  
+  if (!doesBelong) {
+    return next(new AppError('This Place Does not Belong to you', 401));
+  } else {
+    const product = place.products.find((p) => p._id.equals(req.params.productId));
+    
+    if (!product) {
+      return next(new AppError('Product not found', 404));
+    }
+    
+    product.productName = req.body.productName;
+    product.price = req.body.price;
+    
+    await place.save();
+    
+    res.status(200).json({
+      status: 'Success',
+      message: `Product updated: ${product.productName} at place with id ${place.id} has a price of ${product.price}EGP`,
+      data: product,
+    });
+  }
+});
+
+exports.deleteProduct = catchAsync(async (req, res, next) => {
+    const currentOwner = await Owner.findById(req.owner.id);
+    const product = await Product.findById(req.params.id);
+    
+    const place = await Place.findById(product.placeID)
+   
+  
+    if (!product) {
+      return next(new AppError('Product not found', 400));
+    } else {
+      
+  
+      if (currentOwner.id == place.owner) {
+        const place = await Place.findById(product.placeID);
+        place.products.pull(product);
+        await place.save();
+        await Product.findByIdAndDelete(product.id);
+        
+        res.status(200).json({
+          status: 'Success',
+          message: `Product deleted for place with id ${place.id} from user with id ${currentOwner.id}`,
+          data: null,
+        });
+      } else {
+        return next(new AppError('You are not the owner of this product', 401));
+      }
+    }
+  });
+
+
 exports.getProducts = catchAsync(async (req, res, next) => {
   const currentPlace = await Place.findById(req.params.id);
   if (!currentPlace) {
@@ -164,6 +271,64 @@ exports.addOffer = catchAsync(async (req, res, next) => {
     });
   }
 });
+
+exports.updateOffer = catchAsync(async (req, res, next) => {
+  const currentOwner = await Owner.findById(req.owner.id);
+  const place = await Place.findById(req.params.id);
+  const places = currentOwner.places;
+  const reqID = mongoose.Types.ObjectId(req.params.id);
+  const doesBelong = await places.find((place) => place._id.equals(reqID));
+  
+  if (!doesBelong) {
+    return next(new AppError('This Place Does not Belong to you', 401));
+  } else {
+    const offer = place.offers.find((o) => o._id.equals(req.params.offerId));
+    
+    if (!offer) {
+      return next(new AppError('Offer not found', 404));
+    }
+    
+    offer.offerValue = req.body.offerValue;
+    
+    await place.save();
+    
+    res.status(200).json({
+      status: 'Success',
+      message: `Offer updated: ${offer.offerValue}EGP offer at place with id ${place.id}`,
+      data: offer,
+    });
+  }
+});
+
+exports.deleteOffer = catchAsync(async (req, res, next) => {
+  const currentOwner = await Owner.findById(req.owner.id);
+  const offer = await Offer.findById(req.params.id);
+  
+  const place = await Place.findById(offer.placeID)
+ 
+
+  if (!offer) {
+    return next(new AppError('Offer not found', 400));
+  } else {
+    
+
+    if (currentOwner.id == place.owner) {
+      const place = await Place.findById(offer.placeID);
+      place.offers.pull(offer);
+      await place.save();
+      await Offer.findByIdAndDelete(offer.id);
+      
+      res.status(200).json({
+        status: 'Success',
+        message: `Offer deleted for place with id ${place.id} from user with id ${currentOwner.id}`,
+        data: null,
+      });
+    } else {
+      return next(new AppError('You are not the owner of this offer', 401));
+    }
+  }
+});
+
 
 exports.getOffers = catchAsync(async (req, res, next) => {
   const currentPlace = await Place.findById(req.params.id);

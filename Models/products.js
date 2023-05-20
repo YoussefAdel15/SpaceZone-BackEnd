@@ -4,7 +4,7 @@ const productsSchema = new mongoose.Schema({
   placeID: {
     type: mongoose.Schema.ObjectId,
     ref: 'places',
-    select: false,
+    select: true,
   },
   productName: {
     type: String,
@@ -16,7 +16,7 @@ const productsSchema = new mongoose.Schema({
   },
   available: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 });
 

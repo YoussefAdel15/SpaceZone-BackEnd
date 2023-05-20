@@ -4,7 +4,7 @@ const offerSchema = new mongoose.Schema({
   placeID: {
     type: mongoose.Schema.ObjectId,
     ref: 'places',
-    select: false,
+    select: true,
   },
   offerValue: {
     type: Number,
@@ -13,7 +13,7 @@ const offerSchema = new mongoose.Schema({
   },
   active: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 });
 

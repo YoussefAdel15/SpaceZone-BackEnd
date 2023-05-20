@@ -4,7 +4,7 @@ const feedbackSchema = new mongoose.Schema({
   placeID: {
     type: mongoose.Schema.ObjectId,
     ref: 'places',
-    select: false,
+    select: true,
   },
   userID: {
     type: mongoose.Schema.ObjectId,
@@ -13,7 +13,7 @@ const feedbackSchema = new mongoose.Schema({
   },
   feedbackText: {
     type: String,
-    required: false,
+    required: true,
   },
   feedbackNumber: {
     type: Number,
