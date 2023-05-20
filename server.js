@@ -1,24 +1,39 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+
+process.on('uncaughtException', (err) => {
+  console.log('UNCAUGHT EXCEPTION! Shutting down...');
+  console.log(err.name, err.message);
+  process.exit(1);
+});
+
+dotenv.config({ path: './config.env' });
 const app = require('./app');
 
-const url =
-  'mongodb+srv://admin:admin@sz.2t7yzee.mongodb.net/sz?retryWrites=true&w=majority';
+const DB = process.env.DATABASE.replace(
+  '<PASSWORD>',
+  process.env.DATABASE_PASSWORD
+);
 
+mongoose.set('strictQuery', false);
 mongoose
-  .connect(url, {
+  .connect(DB, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
     useUnifiedTopology: true,
   })
-  .then(() => {
-    console.log('DB Connected Successful');
-  });
+  .then(() => console.log('DB connection successful!'));
 
-dotenv.config({ path: './config.env' });
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`App running on port ${port}...`);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.log('UNHANDLED REJECTION!  Shutting down...');
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
 });

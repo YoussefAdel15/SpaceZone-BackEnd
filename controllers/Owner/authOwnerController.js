@@ -15,6 +15,34 @@ const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('./../../utils/email');
 
+const signToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
+const createSendToken = (owner, statusCode, res) => {
+  const token = signToken(owner._id);
+
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    //httpOnly: true,
+  };
+  //if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      owner,
+    },
+  });
+};
+
 //Methods
 
 //Sign
@@ -32,17 +60,7 @@ exports.SignupOwner = catchAsync(async (req, res, next) => {
     passwordConfirmation: req.body.passwordConfirmation,
   });
 
-  const token = jwt.sign({ id: newOwner._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
-
-  res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      user: newOwner,
-    },
-  });
+  createSendToken(newOwner, 201, res);
 });
 
 //Login
@@ -62,14 +80,7 @@ exports.loginOwner = catchAsync(async (req, res, next) => {
 
   // 3) if everything ok, send token to client
 
-  const token = jwt.sign({ id: owner._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
-  console.log(token);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(owner, 201, res);
 });
 
 //Forget Password
@@ -259,14 +270,7 @@ exports.resetPasswordOwner = catchAsync(async (req, res, next) => {
 
   // 3) update changePasswordAt property for the user
   // 4) Log the user in, send JWT
-  const token = jwt.sign({ id: owner._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
-  //console.log(token);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(owner, 200, res);
 });
 
 // Restrict The Route to specific Roles

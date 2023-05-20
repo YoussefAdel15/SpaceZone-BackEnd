@@ -1,8 +1,39 @@
-/* eslint-disable import/no-useless-path-segments */
-/* eslint-disable no-undef */
-/* eslint-disable no-multi-assign */
 const mongoose = require('mongoose');
 const AppError = require('./../utils/appError');
+
+const daysSchema = new mongoose.Schema({
+  date: { type: Date, required: true },
+  hours: {
+    type: {
+      [Number]: Boolean,
+    },
+  },
+  // if false then the seat is available
+});
+
+const seatSchema = new mongoose.Schema({
+  seatNumber: {
+    type: Number,
+    required: true,
+  },
+  days: [daysSchema],
+  Silent: Boolean,
+});
+const roomSchema = new mongoose.Schema({
+  roomType: {
+    type: String,
+    enum: ['Meeting Room', 'Training Room'],
+    required: true,
+  },
+  roomNumber: {
+    type: Number,
+    required: true,
+  },
+  days: [daysSchema],
+  price: {
+    type: Number,
+  },
+});
 
 const placeSchema = new mongoose.Schema({
   owner: {
@@ -49,33 +80,87 @@ const placeSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Please enter your 1 Hour price for regular seats'],
   },
-  vipHourPrice: {
+  numberOfMeetingRooms: {
     type: Number,
   },
-  roomPrice: {
-    type: Number,
-  },
+  meetingRoomPrices: { type: Number },
+  numberOfTrainingRooms: { type: Number },
+  triningRoomPrice: { type: Number },
+  numberOfSilentSeats: { type: Number },
+  silentSeatPrice: { type: Number },
   numberOfSeats: {
     type: Number,
     required: [true, 'Please Enter number of Seats in your WorkingSpace'],
   },
-  numberOfRooms: {
-    type: Number,
+  seats: [seatSchema],
+  silentSeats: [seatSchema],
+  availableFor: {
+    type: String,
+    enum: ['weekly', 'monthly'],
+    default: 'weekly',
   },
-  //   products:{
-  //     type
-  //   },
-  openTime: {
-    type: Date,
-    //required: [true, 'please enter the starting time of your WorkingSpace'],
-  },
-  closeTime: {
-    type: Date,
-    //required: [true, 'Please Enter your closing time'],
+  rooms: [roomSchema],
+  openingHours: {
+    type: [
+      {
+        /*Days are (
+          'Sunday',
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday')*/
+        day: { type: String, required: true },
+        openTime: { type: Number },
+        closeTime: { type: Number },
+        closed: { type: Boolean, default: false },
+      },
+    ],
+    required: true,
   },
   available: {
     type: Boolean,
     default: false,
+  },
+  feedbacks: {
+    type: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'feedback',
+        select: true,
+      },
+    ],
+  },
+  products: {
+    type: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'products',
+        select: true,
+      },
+    ],
+  },
+  offers: {
+    type: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'offers',
+        select: true,
+      },
+    ],
+  },
+  bio: {
+    type: String,
+    default: '',
+  },
+  rules: {
+    type: [{ type: String }],
+    default: [],
+  },
+  amenities: {
+    type: [{ type: String }], // enums,
+    default: [],
   },
 });
 
