@@ -276,3 +276,36 @@ exports.checkAvailabilityRooms = catchAsync(async (req, res, next) => {
   }
 }); //DONE
 
+exports.getOpenHours = catchAsync(async (req, res, next) => {
+  const currentPlace = await Place.findById(req.params.id);
+  let date = new Date();
+  const day = date.getDay();
+  date = date.toISOString().split('T')[0];
+  const openHours = currentPlace.openingHours[day];
+  let openHoursArray = [];
+  function getActiveHours(date, openingHours, dayIndex) {
+    const dayOpeningHours = openingHours[dayIndex];
+
+    if (dayOpeningHours && !dayOpeningHours.closed) {
+      return dayOpeningHours.closeTime - dayOpeningHours.openTime;
+    }
+
+    return 0;
+  }
+  const activeHours = getActiveHours(date, currentPlace.openingHours, day);
+  if (activeHours > 0) {
+    for (let i = 0; i <= activeHours; i++) {
+      openHoursArray.push(currentPlace.openingHours[day].openTime + i);
+    }
+    res.status(200).json({
+      status: 'success',
+      openHoursArray,
+    });
+  } else {
+    res.status(200).json({
+      status: 'fail',
+      message: 'Place is Closed at the moment',
+    });
+  }
+}); //DONE
+

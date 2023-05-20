@@ -9,4 +9,6 @@ router.post('/checkAvailabilitySilent/:id', bookingController.checkAvailabilityS
 
 router.post('/checkAvailabilityRoom/:pid/:rid', bookingController.checkAvailabilityRooms);
 
+router.get('/getOpenHours/:id', bookingController.getOpenHours);
+
 module.exports = router;
