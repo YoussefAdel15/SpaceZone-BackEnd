@@ -58,22 +58,23 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     selfService: req.body.selfService,
     googleAddress: req.body.address,
     hourPrice: req.body.hourPrice,
-    vipHourPrice: req.body.vipHourPrice,
     roomHourPrice: req.body.roomHourPrice,
     numberOfSeats: req.body.numberOfSeats,
-    numberOfRooms: req.body.numberOfRooms,
+    numberOfMeetingRooms: req.body.numberOfMeetingRooms,
+    numberOfTrainingRooms: req.body.numberOfTrainingRooms,
+    numberOfSilentRooms: req.body.numberOfSilentRooms,
     openingHours: req.body.openingHours,
     owner: currentOwner.id,
+    numberOfSilentSeats: req.body.numberOfSilentSeats,
+    silentSeatPrice: req.body.silentSeatPrice,
   });
   const currentDate = new Date();
   const datesArray = [currentDate];
-  for (let i = 0; i < newPlace.numberOfSeats; i++) {
-    const seat = {
-      seatNumber: i + 1,
-    };
-    newPlace.seats.push(seat);
+  if (newPlace.numberOfSeats !== 0 && newPlace.hourPrice === null) {
+    return next(
+      new AppError('Please enter the price of the regular seat', 400)
+    );
   }
-
   const daysOfWeek = [
     'Sunday',
     'Monday',
@@ -83,166 +84,140 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     'Friday',
     'Saturday',
   ];
+  // GET ACTIVE HOURS FOR EACH DAY
+  function getActiveHours(date, openingHours, dayIndex) {
+    const dayOpeningHours = openingHours[dayIndex];
+
+    if (dayOpeningHours && !dayOpeningHours.closed) {
+      return dayOpeningHours.closeTime - dayOpeningHours.openTime;
+    }
+
+    return 0;
+  }
+  // CREATE N NUMBER OF ELEMENTS INSIDE EACH ARRAY (SEATS , SILENT , ROOMS)
+  for (let i = 0; i < newPlace.numberOfSeats; i++) {
+    const seat = {
+      seatNumber: i + 1,
+      silent: false,
+    };
+    newPlace.seats.push(seat);
+  }
+  for (let i = 0; i < newPlace.numberOfSilentSeats; i++) {
+    const seat = {
+      seatNumber: i + 1,
+      silent: true,
+    };
+    newPlace.silentSeats.push(seat);
+  }
+  for (let i = 0; i < newPlace.numberOfMeetingRooms; i++) {
+    const meeting = {
+      roomNumber: i + 1,
+      roomType: 'Meeting Room',
+    };
+    newPlace.rooms.push(meeting);
+  }
+  for (let i = 0; i < newPlace.numberOfTrainingRooms; i++) {
+    const training = {
+      roomNumber: i + 1,
+      roomType: 'Training Room',
+    };
+    newPlace.rooms.push(training);
+  }
+  // CHECK IF PLACE IS AVAILABLE FOR WEEKLY OR MONTHLY
   if (newPlace.availableFor === 'weekly') {
     for (let i = 1; i < 7; i++) {
       const newDate = new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000);
       datesArray.push(newDate);
-    }
-
-    for (let j = 0; j < newPlace.numberOfSeats; j++) {
-      for (const date of datesArray) {
-        let activeHours;
-        function Hours() {
-          this.array = {};
-          this.length = 0;
-        }
-        // CustomArray method to push an element with a custom index
-        Hours.prototype.push = function (index, Boolean) {
-          this.array[index] = Boolean;
-          this.length++;
-        };
-        var hours = new Hours();
-        switch (date.getDay()) {
-          case 0:
-            if (newPlace.openingHours[0].closed === false) {
-              activeHours =
-                newPlace.openingHours[0].closeTime -
-                newPlace.openingHours[0].openTime;
-            }
-            break;
-          case 1:
-            if (newPlace.openingHours[1].closed === false) {
-              activeHours =
-                newPlace.openingHours[1].closeTime -
-                newPlace.openingHours[1].openTime;
-            }
-            break;
-          case 2:
-            if (newPlace.openingHours[2].closed === false) {
-              activeHours =
-                newPlace.openingHours[2].closeTime -
-                newPlace.openingHours[2].openTime;
-            }
-            break;
-          case 3:
-            if (newPlace.openingHours[3].closed === false) {
-              activeHours =
-                newPlace.openingHours[3].closeTime -
-                newPlace.openingHours[3].openTime;
-            }
-            break;
-          case 4:
-            if (newPlace.openingHours[4].closed === false) {
-              activeHours =
-                newPlace.openingHours[4].closeTime -
-                newPlace.openingHours[4].openTime;
-            }
-            break;
-          case 5:
-            if (newPlace.openingHours[5].closed === false) {
-              activeHours =
-                newPlace.openingHours[5].closeTime -
-                newPlace.openingHours[5].openTime;
-            }
-            break;
-          case 6:
-            if (newPlace.openingHours[6].closed === false) {
-              activeHours =
-                newPlace.openingHours[6].closeTime -
-                newPlace.openingHours[6].openTime;
-            }
-            break;
-          default:
-            console.log('Invalid day');
-            break;
-        }
-        for (let i = 0; i < activeHours; i++) {
-          hours.push(newPlace.openingHours[date.getDay()].openTime + i, false);
-        }
-        newPlace.seats[j].days.push({ date, hours });
-      }
     }
   } else if (newPlace.availableFor === 'monthly') {
     for (let i = 1; i < 30; i++) {
       const newDate = new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000);
       datesArray.push(newDate);
     }
+  }
+  // ADD DAYS TO SEATS
+  for (let j = 0; j < newPlace.numberOfSeats; j++) {
+    for (const date of datesArray) {
+      const activeHours = getActiveHours(
+        date,
+        newPlace.openingHours,
+        date.getDay()
+      );
 
-    for (let j = 0; j < newPlace.numberOfSeats; j++) {
-      for (const date of datesArray) {
-        let activeHours;
-        function Hours() {
-          this.array = {};
-          this.length = 0;
-        }
-        // CustomArray method to push an element with a custom index
-        Hours.prototype.push = function (index, value) {
-          this.array[index] = value;
-          this.length++;
-        };
-        var hours = new Hours();
-        switch (date.getDay()) {
-          case 0:
-            if (newPlace.openingHours[0].closed === false) {
-              activeHours =
-                newPlace.openingHours[0].closeTime -
-                newPlace.openingHours[0].openTime;
-            }
-            break;
-          case 1:
-            if (newPlace.openingHours[1].closed === false) {
-              activeHours =
-                newPlace.openingHours[1].closeTime -
-                newPlace.openingHours[1].openTime;
-            }
-            break;
-          case 2:
-            if (newPlace.openingHours[2].closed === false) {
-              activeHours =
-                newPlace.openingHours[2].closeTime -
-                newPlace.openingHours[2].openTime;
-            }
-            break;
-          case 3:
-            if (newPlace.openingHours[3].closed === false) {
-              activeHours =
-                newPlace.openingHours[3].closeTime -
-                newPlace.openingHours[3].openTime;
-            }
-            break;
-          case 4:
-            if (newPlace.openingHours[4].closed === false) {
-              activeHours =
-                newPlace.openingHours[4].closeTime -
-                newPlace.openingHours[4].openTime;
-            }
-            break;
-          case 5:
-            if (newPlace.openingHours[5].closed === false) {
-              activeHours =
-                newPlace.openingHours[5].closeTime -
-                newPlace.openingHours[5].openTime;
-            }
-            break;
-          case 6:
-            if (newPlace.openingHours[6].closed === false) {
-              activeHours =
-                newPlace.openingHours[6].closeTime -
-                newPlace.openingHours[6].openTime;
-            }
-            break;
-          default:
-            console.log('Invalid day');
-            break;
-        }
-        for (let i = 0; i < activeHours; i++) {
-          console.log(customArray.array);
-          hours.push(newPlace.openingHours[date.getDay()].openTime + i, false);
-        }
-        newPlace.seats[j].days.push({ date, hours });
+      function Hours() {
+        this.array = {};
+        this.length = 0;
       }
+
+      Hours.prototype.push = function (index, value) {
+        this.array[index] = value;
+        this.length++;
+      };
+
+      const hours = new Hours();
+
+      for (let i = 0; i < activeHours; i++) {
+        hours.push(newPlace.openingHours[date.getDay()].openTime + i, false);
+      }
+
+      newPlace.seats[j].days.push({ date, hours });
     }
   }
+  // ADD DAYS TO ROOMS
+  for (let i = 0; i < newPlace.rooms.length; i++) {
+    for (const date of datesArray) {
+      const activeHours = getActiveHours(
+        date,
+        newPlace.openingHours,
+        date.getDay()
+      );
+      function Hours() {
+        this.array = {};
+        this.length = 0;
+      }
+
+      Hours.prototype.push = function (index, value) {
+        this.array[index] = value;
+        this.length++;
+      };
+
+      const hours = new Hours();
+
+      for (let j = 0; j < activeHours; j++) {
+        hours.push(newPlace.openingHours[date.getDay()].openTime + j, false);
+      }
+      newPlace.rooms[i].days.push({ date, hours });
+    }
+  }
+  // ADD DAYS TO SILENT SEATS
+  for (let j = 0; j < newPlace.numberOfSilentSeats; j++) {
+    for (const date of datesArray) {
+      const activeHours = getActiveHours(
+        date,
+        newPlace.openingHours,
+        date.getDay()
+      );
+
+      function Hours() {
+        this.array = {};
+        this.length = 0;
+      }
+
+      Hours.prototype.push = function (index, value) {
+        this.array[index] = value;
+        this.length++;
+      };
+
+      const hours = new Hours();
+
+      for (let i = 0; i < activeHours; i++) {
+        hours.push(newPlace.openingHours[date.getDay()].openTime + i, false);
+      }
+
+      newPlace.silentSeats[j].days.push({ date, hours });
+    }
+  }
+
   await newPlace.save();
   currentOwner.places.push(newPlace);
   await currentOwner.save();

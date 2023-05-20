@@ -17,19 +17,21 @@ const seatSchema = new mongoose.Schema({
     required: true,
   },
   days: [daysSchema],
-  isOccupied: {
-    type: Boolean,
-    default: false,
-  },
+  Silent: Boolean,
 });
 const roomSchema = new mongoose.Schema({
+  roomType: {
+    type: String,
+    enum: ['Meeting Room', 'Training Room'],
+    required: true,
+  },
   roomNumber: {
     type: Number,
     required: true,
   },
-  isOccupied: {
-    type: Boolean,
-    default: false,
+  days: [daysSchema],
+  price: {
+    type: Number,
   },
 });
 
@@ -78,37 +80,37 @@ const placeSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Please enter your 1 Hour price for regular seats'],
   },
-  vipHourPrice: {
+  numberOfMeetingRooms: {
     type: Number,
   },
-  roomPrice: {
-    type: Number,
-  },
-  numberOfRooms: {
-    type: Number,
-  },
+  meetingRoomPrices: { type: Number },
+  numberOfTrainingRooms: { type: Number },
+  triningRoomPrice: { type: Number },
+  numberOfSilentSeats: { type: Number },
+  silentSeatPrice: { type: Number },
   numberOfSeats: {
     type: Number,
     required: [true, 'Please Enter number of Seats in your WorkingSpace'],
   },
   seats: [seatSchema],
+  silentSeats: [seatSchema],
   availableFor: {
     type: String,
     enum: ['weekly', 'monthly'],
     default: 'weekly',
   },
-  // rooms: [roomSchema],
+  rooms: [roomSchema],
   openingHours: {
     type: [
       {
-    /*Days are (
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday')*/
+        /*Days are (
+          'Sunday',
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday')*/
         day: { type: String, required: true },
         openTime: { type: Number },
         closeTime: { type: Number },
@@ -147,6 +149,18 @@ const placeSchema = new mongoose.Schema({
         select: true,
       },
     ],
+  },
+  bio: {
+    type: String,
+    default: '',
+  },
+  rules: {
+    type: [{ type: String }],
+    default: [],
+  },
+  amenities: {
+    type: [{ type: String }], // enums,
+    default: [],
   },
 });
 
