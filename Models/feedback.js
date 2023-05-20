@@ -6,6 +6,9 @@ const feedbackSchema = new mongoose.Schema({
     ref: 'places',
     select: false,
   },
+  userName:{
+    type: String,
+  },
   userID: {
     type: mongoose.Schema.ObjectId,
     ref: 'users',

@@ -76,6 +76,7 @@ exports.addFeedback = catchAsync(async (req, res, next) => {
       userID: currentUser.id,
       feedbackText: req.body.feedbackText,
       feedbackNumber: req.body.feedbackNumber,
+      userName: currentUser.userName,
     });
     place.feedbacks.push(newFeedback);
     await place.save();
