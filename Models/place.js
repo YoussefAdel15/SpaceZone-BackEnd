@@ -33,6 +33,9 @@ const roomSchema = new mongoose.Schema({
   price: {
     type: Number,
   },
+  seats:{
+    type: Number
+  }
 });
 
 const placeSchema = new mongoose.Schema({
@@ -83,9 +86,9 @@ const placeSchema = new mongoose.Schema({
   numberOfMeetingRooms: {
     type: Number,
   },
-  meetingRoomPrices: { type: Number },
+  // meetingRoomPrices: { type: Number },
   numberOfTrainingRooms: { type: Number },
-  triningRoomPrice: { type: Number },
+  // triningRoomPrice: { type: Number },
   numberOfSilentSeats: { type: Number },
   silentSeatPrice: { type: Number },
   numberOfSeats: {

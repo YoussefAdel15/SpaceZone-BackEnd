@@ -62,12 +62,13 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     numberOfSeats: req.body.numberOfSeats,
     numberOfMeetingRooms: req.body.numberOfMeetingRooms,
     numberOfTrainingRooms: req.body.numberOfTrainingRooms,
-    numberOfSilentRooms: req.body.numberOfSilentRooms,
     openingHours: req.body.openingHours,
     owner: currentOwner.id,
     numberOfSilentSeats: req.body.numberOfSilentSeats,
     silentSeatPrice: req.body.silentSeatPrice,
   });
+  const MeetingRooms = req.body.MeetingRooms;
+  const TrainingRooms = req.body.TrainingRooms;
   const currentDate = new Date();
   const datesArray = [currentDate];
   if (newPlace.numberOfSeats !== 0 && newPlace.hourPrice === null) {
@@ -109,17 +110,21 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     };
     newPlace.silentSeats.push(seat);
   }
-  for (let i = 0; i < newPlace.numberOfMeetingRooms; i++) {
+  for (let i = 0; i < MeetingRooms.length; i++) {
     const meeting = {
       roomNumber: i + 1,
       roomType: 'Meeting Room',
+      price: MeetingRooms[i].price,
+      seats: MeetingRooms[i].seats,
     };
     newPlace.rooms.push(meeting);
   }
-  for (let i = 0; i < newPlace.numberOfTrainingRooms; i++) {
+  for (let i = 0; i < TrainingRooms.length; i++) {
     const training = {
       roomNumber: i + 1,
       roomType: 'Training Room',
+      price: TrainingRooms[i].price,
+      seats: TrainingRooms[i].seats,
     };
     newPlace.rooms.push(training);
   }
