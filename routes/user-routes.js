@@ -57,23 +57,17 @@ router.patch('/resetPasswordUser/:token', authController.resetPassword);
 
 router.route('/').get(userController.getAllUsers);
 
-// router
-//   .route('/:id')
-//   .get(
-//     authController.protect,
-//     authController.restrictTo('User', 'Admin'),
-//     userController.getUser
-//   )
-//   .patch(
-//     authController.protect,
-//     authController.restrictTo('User', 'Admin'),
-//     userController.updateUser
-//   )
-//   .delete(
-//     authController.protect,
-//     authController.restrictTo('User', 'Admin'),
-//     userController.deleteUser
-//   );
+router.get('/:id', userController.getUser);
+// .patch(
+//   authController.protect,
+//   authController.restrictTo('User', 'Admin'),
+//   userController.updateUser
+// )
+// .delete(
+//   authController.protect,
+//   authController.restrictTo('User', 'Admin'),
+//   userController.deleteUser
+// );
 
 router.route('/logout').post(authController.logOut);
 

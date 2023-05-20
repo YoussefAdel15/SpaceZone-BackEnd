@@ -41,10 +41,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 });
 
 exports.getUser = catchAsync(async (req, res, next) => {
-  const token = req.headers.authorization.split(' ')[1];
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  const currentUser = await User.findById(decoded.id);
-  console.log(req.params.id);
+  const currentUser = await User.findById(req.params.id);
   if (!currentUser) {
     return next(new AppError('User not found', 404));
   }
@@ -52,7 +49,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'Success',
     message: `User ${req.params.id} has been found successfully`,
-    data: currentUser,
+    currentUser,
   });
 });
 
