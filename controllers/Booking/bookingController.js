@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../../Models/user');
+const axios = require('axios');
+const Booking = require('../../Models/booking');
 
 const Place = require('../../Models/place');
 const catchAsync = require('./../../utils/catchAsync');
@@ -305,6 +307,102 @@ exports.getOpenHours = catchAsync(async (req, res, next) => {
     res.status(200).json({
       status: 'fail',
       message: 'Place is Closed at the moment',
+    });
+  }
+}); //DONE
+
+exports.bookSeat = catchAsync(async (req, res, next) => {
+  // startTime , date , endTime , numberOfSeats , paymentMethod
+  const currentPlace = await Place.findById(req.params.id);
+  const user = await User.findById(req.user.id);
+  const date = new Date(req.body.Date);
+  const startTime = req.body.startTime;
+  const endTime = req.body.endTime;
+  const numberOfHours = endTime - startTime;
+  const numberOfSeats = req.body.numberOfSeats;
+  let availableSeatsIndex = [];
+
+  try {
+    const response = await axios.post(
+      `https://spacezone-backend.cyclic.app/api/booking/checkAvailability/${req.params.id}`,
+      {
+        Date: date,
+        startTime,
+        endTime,
+        numberOfHours,
+        numberOfSeats,
+      }
+    );
+
+    if (response.data.status === 'success') {
+      availableSeatsIndex = response.data.availableSeatsIndex;
+
+      const priceToPay = currentPlace.hourPrice * numberOfHours * numberOfSeats;
+
+      if (availableSeatsIndex.length > 0) {
+        // create booking and add it to the user
+        const booking = await Booking.create({
+          placeID: req.params.id,
+          userID: req.user.id,
+          placeName: currentPlace.placeName,
+          priceToPay,
+          bookingDate: date,
+          bookingHour: numberOfHours,
+          startTime: startTime > 12 ? startTime - 12 : startTime,
+          endTime: endTime > 12 ? endTime - 12 : endTime,
+          bookingSeat: availableSeatsIndex.length,
+          bookingStatus: true,
+          paymentStatus: false,
+          paymentMethod: req.body.paymentMethod,
+        });
+        user.booking.push(booking);
+        await user.save();
+        // update the seat hours to booked
+        for (let i = 0; i < availableSeatsIndex.length; i++) {
+          currentPlace.seats[availableSeatsIndex[i]].days.forEach((e) => {
+            // check if the date is equal to the date he wants to book
+            if (
+              e.date.toISOString().split('T')[0] ===
+              date.toISOString().split('T')[0]
+            ) {
+              // update the hours to booked from the start time to the end time
+              for (let j = startTime - 1; j < endTime; j++) {
+                if (e.hours.array[j] === false) {
+                  e.hours.array[j] = true;
+                } else {
+                  break;
+                }
+              }
+              // mark the document as modified to save the changes
+              currentPlace.markModified(`seats.${availableSeatsIndex[i]}.days`); // Mark this part of the document as modified
+            }
+          });
+        }
+        // save the changes to the database
+        await currentPlace.save();
+
+        res.status(200).json({
+          status: 'success',
+          message: 'Seat booked successfully',
+        });
+      } else {
+        res.status(200).json({
+          status: 'fail',
+          message: 'No available seats at the moment',
+        });
+      }
+    } else {
+      res.status(500).json({
+        status: 'fail',
+        message: 'Error fetching data from sub-API',
+      });
+    }
+  } catch (error) {
+    // handle errors
+    res.status(500).json({
+      status: 'error',
+      message: 'Error fetching data from sub-API',
+      error: error.message,
     });
   }
 }); //DONE

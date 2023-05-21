@@ -25,10 +25,10 @@ const userSchema = new mongoose.Schema({
     required: [true, 'user must have a password'],
     select: false,
   },
-  passwordConfirmation: {
-    type: String,
-    required: [true, 'must confirm your password'],
-  },
+  // passwordConfirmation: {
+  //   type: String,
+  //   required: [true, 'must confirm your password'],
+  // },
   role: {
     type: String,
     default: 'User',
@@ -36,6 +36,16 @@ const userSchema = new mongoose.Schema({
   phoneActive: {
     type: Boolean,
     default: false,
+  },
+  booking: {
+    type: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'bookings',
+        select: true,
+      },
+    ],
+    default: [],
   },
   passwordResetToken: String,
   passwordResetExpires: Date,
