@@ -106,4 +106,10 @@ router
   .route('/deleteMe')
   .delete(authOwnerController.protect, ownerController.deleteMe);
 
+router.route('/resetDays/:id').post(ownerController.resetDays);
+
+router
+  .route('/resetDaysForAllPlaces')
+  .post(ownerController.resetDaysForAllPlaces);
+
 module.exports = router;

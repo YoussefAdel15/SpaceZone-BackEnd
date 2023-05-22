@@ -419,7 +419,7 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
       endTime: endTime,
     };
     const response = await axios.post(
-      `http://localhost:3000/api/booking/checkAvailabilityRoom/${placeID}/${roomID}`,
+      `https://spacezone-backend.cyclic.app/api/booking/checkAvailabilityRoom/${placeID}/${roomID}`,
       dataSentToSubAPI
     );
     console.log(response.data);
