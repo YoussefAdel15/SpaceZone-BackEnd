@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const https = require('https');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../../Models/user');
@@ -205,6 +206,7 @@ exports.checkAvailabilityRooms = catchAsync(async (req, res, next) => {
   const numberOfHours = endTime - startTime;
   date = date.toISOString().split('T')[0];
   let done = false;
+
   function hasConsecutiveNumbers(arr) {
     for (let i = 1; i < arr.length; i++) {
       if (arr[i] !== arr[i - 1] + 1) {
@@ -213,43 +215,33 @@ exports.checkAvailabilityRooms = catchAsync(async (req, res, next) => {
     }
     return true;
   }
+
   if (startTime < endTime) {
     for (let j = 0; j < room.days.length; j++) {
-      if (
-        // check if the date is equal to the date he wants
-        room.days[j].date.toISOString().split('T')[0] === date
-      ) {
+      if (room.days[j].date.toISOString().split('T')[0] === date) {
         if (room.days[j].hours.length === 0) {
-          // working space is off
           done = true;
           res.status(200).json({
             status: 'fail',
             message: 'Place is not available',
           });
-
           break;
         }
         let availableHours = 0;
         let availableHoursIndex = [];
-        for (let k = startTime; k < endTime; k++) {
+        for (let k = startTime; k <= endTime; k++) {
           if (
-            room.days[j].hours.array[k] == false &&
+            room.days[j].hours.array[k] === false &&
             availableHours < numberOfHours
           ) {
-            // check if the seat is available and if the number of hours is less than the number of hours he wants
-            // add the hour to the available hours array and increment the available hours
             availableHours++;
             availableHoursIndex.push(k);
           }
           if (availableHours === numberOfHours) {
-            // check if the number of hours is equal to the number of hours he wants and if the number of seats is less
-            // than the number of seats he wants
-            // check if the hours are consecutive
             if (hasConsecutiveNumbers(availableHoursIndex)) {
-              // if the hours are consecutive then increment the available seats and add the seat index to the available seats array and break the loop
               break;
             }
-          } else {
+          } else if (k === endTime - 1) {
             done = true;
             res.status(200).json({
               status: 'fail',
@@ -270,10 +262,11 @@ exports.checkAvailabilityRooms = catchAsync(async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       message: `Room number ${room.roomNumber} is available from ${
-        startTime > 12 ? startTime - 12 : startTime + 12
+        startTime > 12 ? startTime - 12 : startTime
       } ${startTime > 12 ? 'PM' : 'AM'} to ${
-        endTime > 12 ? endTime - 12 : endTime + 12
+        endTime > 12 ? endTime - 12 : endTime
       } ${endTime > 12 ? 'PM' : 'AM'}`,
+      RoomNumber: room.roomNumber,
     });
   }
 }); //DONE
@@ -407,3 +400,101 @@ exports.bookSeat = catchAsync(async (req, res, next) => {
   }
 }); //DONE
 
+exports.bookRoom = catchAsync(async (req, res, next) => {
+  // startTime , date , endTime , numberOfSeats , paymentMethod
+  const currentPlace = await Place.findById(req.params.pid);
+  const user = await User.findById(req.user.id);
+  const date = new Date(req.body.Date);
+  const startTime = req.body.startTime;
+  const endTime = req.body.endTime;
+  const numberOfHours = endTime - startTime;
+  const room = currentPlace.rooms.find((e) => e._id == req.params.rid);
+  try {
+    const roomID = req.params.rid;
+    const placeID = req.params.pid;
+    console.log(roomID, placeID);
+    const dataSentToSubAPI = {
+      Date: req.body.Date,
+      startTime: startTime,
+      endTime: endTime,
+    };
+    const response = await axios.post(
+      `http://localhost:3000/api/booking/checkAvailabilityRoom/${placeID}/${roomID}`,
+      dataSentToSubAPI
+    );
+    console.log(response.data);
+    if (response.data.status === 'success') {
+      const priceToPay = room.price * numberOfHours;
+      room.days.forEach((e) => {
+        // check if the date is equal to the date he wants to book
+        if (
+          e.date.toISOString().split('T')[0] ===
+          date.toISOString().split('T')[0]
+        ) {
+          // update the hours to booked from the start time to the end time
+          for (let j = startTime - 1; j < endTime; j++) {
+            if (e.hours.array[j] === false) {
+              e.hours.array[j] = true;
+            } else {
+              break;
+            }
+          }
+          // mark the document as modified to save the changes
+          currentPlace.markModified(
+            `rooms.${response.data.RoomNumber - 1}.days`
+          ); // Mark this part of the document as modified
+        }
+      });
+      // create booking and add it to the user
+      const booking = await Booking.create({
+        placeID: req.params.pid,
+        userID: req.user.id,
+        placeName: currentPlace.placeName,
+        priceToPay,
+        bookingDate: date,
+        bookingHour: numberOfHours,
+        startTime: startTime > 12 ? startTime - 12 : startTime,
+        endTime: endTime > 12 ? endTime - 12 : endTime,
+        bookingRoom: room.roomNumber,
+        bookingStatus: true,
+        paymentStatus: false,
+        paymentMethod: req.body.paymentMethod,
+      });
+      user.booking.push(booking);
+      await user.save();
+      // update the seat hours to booked
+      console.log(response.data);
+      // save the changes to the database
+      await currentPlace.save();
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Room booked successfully',
+      });
+    } else if (
+      response.data.status === 'fail' &&
+      response.data.message === 'Room is Not available at the moment'
+    ) {
+      res.status(403).json({
+        status: 'fail',
+        message: 'Room is Not available at the time you want to book it',
+      });
+    } else if (
+      response.data.status === 'fail' &&
+      response.data.message === 'Invalid time'
+    ) {
+      res.status(403).json({
+        status: 'fail',
+        message: 'Invalid time',
+      });
+    }
+  } catch (error) {
+    // handle errors
+    res.status(500).json({
+      status: 'error',
+      message: 'Error fetching data from sub-API',
+      error: error.message,
+      response: error.response && error.response.data, // Add this line
+    });
+  }
+}); //DONE

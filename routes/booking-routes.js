@@ -24,4 +24,6 @@ router.post(
   bookingController.bookSeat
 );
 
+router.post('/bookRoom/:pid/:rid', authController.protect, bookingController.bookRoom);
+
 module.exports = router;
