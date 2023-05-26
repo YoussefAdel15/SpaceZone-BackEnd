@@ -57,7 +57,7 @@ router.patch('/resetPasswordUser/:token', authController.resetPassword);
 
 router.route('/').get(userController.getAllUsers);
 
-router.get('/:id', userController.getUser);
+router.get('/me2', authController.protect, userController.getUser);
 // .patch(
 //   authController.protect,
 //   authController.restrictTo('User', 'Admin'),
@@ -77,8 +77,8 @@ router.post('/phone/verify-otp', authController.protect, twilio.verifyOTP);
 router.get(
   '/me',
   authController.protect,
-  userController.getMe,
-  userController.getUser
+  userController.getMe
+  // userController.getUser
 );
 router.patch('/updateMe', authController.protect, userController.updateMe);
 router.delete('/deleteMe', authController.protect, userController.deleteMe);

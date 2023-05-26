@@ -19,7 +19,7 @@ exports.getAllUsers = catchAsync(async (req, res) => {
 });
 
 exports.getMe = (req, res, next) => {
-  req.params.id = req.user._id;
+  req.params.id = req.user.id;
   next();
 };
 
@@ -41,7 +41,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 });
 
 exports.getUser = catchAsync(async (req, res, next) => {
-  const currentUser = await User.findById(req.params.id);
+  const currentUser = await User.findById(req.user.id);
   if (!currentUser) {
     return next(new AppError('User not found', 404));
   }
