@@ -16,7 +16,7 @@ router.post(
   bookingController.checkAvailabilityRooms
 );
 
-router.get('/getOpenHours/:id', bookingController.getOpenHours);
+router.post('/getOpenHours/:id', bookingController.getOpenHours);
 
 router.post(
   '/bookSeat/:id',
@@ -24,6 +24,10 @@ router.post(
   bookingController.bookSeat
 );
 
-router.post('/bookRoom/:pid/:rid', authController.protect, bookingController.bookRoom);
+router.post(
+  '/bookRoom/:pid/:rid',
+  authController.protect,
+  bookingController.bookRoom
+);
 
 module.exports = router;
