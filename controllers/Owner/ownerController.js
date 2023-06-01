@@ -305,52 +305,43 @@ exports.resetDays = catchAsync(async (req, res) => {
   const place = await Place.findById(req.params.id);
   const currentDate = new Date();
   const datesArray = [currentDate];
-  const owner = await Owner.findById(place.owner);
-  if (owner.accepted === true) {
-    if (place.availableFor === 'weekly') {
-      for (let i = 1; i < 7; i++) {
-        const newDate = new Date(
-          currentDate.getTime() + i * 24 * 60 * 60 * 1000
-        );
-        datesArray.push(newDate);
-      }
-    } else if (place.availableFor === 'monthly') {
-      for (let i = 1; i < 30; i++) {
-        const newDate = new Date(
-          currentDate.getTime() + i * 24 * 60 * 60 * 1000
-        );
-        datesArray.push(newDate);
+  if (place.availableFor === 'weekly') {
+    for (let i = 1; i < 7; i++) {
+      const newDate = new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000);
+      datesArray.push(newDate);
+    }
+  } else if (place.availableFor === 'monthly') {
+    for (let i = 1; i < 30; i++) {
+      const newDate = new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000);
+      datesArray.push(newDate);
+    }
+  }
+  for (let i = 0; i < place.seats.length; i++) {
+    for (let j = 0; j < place.seats[i].days.length; j++) {
+      place.seats[i].days[j].date = datesArray[j];
+      for (let k = 0; k < place.seats[i].days[j].hours.length; k++) {
+        place.seats[i].days[j].hours[k] = false;
       }
     }
-    for (let i = 0; i < place.seats.length; i++) {
-      for (let j = 0; j < place.seats[i].days.length; j++) {
-        place.seats[i].days[j].date = datesArray[j];
-        for (let k = 0; k < place.seats[i].days[j].hours.length; k++) {
-          place.seats[i].days[j].hours[k] = false;
-        }
+    place.markModified(`place.seats[${i}]`); // Mark this part of the document as modified
+  }
+  for (let i = 0; i < place.silentSeats.length; i++) {
+    for (let j = 0; j < place.silentSeats[i].days.length; j++) {
+      place.silentSeats[i].days[j].date = datesArray[j];
+      for (let k = 0; k < place.silentSeats[i].days[j].hours.length; k++) {
+        place.silentSeats[i].days[j].hours[k] = false;
       }
-      place.markModified(`place.seats[${i}]`); // Mark this part of the document as modified
     }
-    for (let i = 0; i < place.silentSeats.length; i++) {
-      for (let j = 0; j < place.silentSeats[i].days.length; j++) {
-        place.silentSeats[i].days[j].date = datesArray[j];
-        for (let k = 0; k < place.silentSeats[i].days[j].hours.length; k++) {
-          place.silentSeats[i].days[j].hours[k] = false;
-        }
+    place.markModified(`place.silentSeats[${i}]`); // Mark this part of the document as modified
+  }
+  for (let i = 0; i < place.rooms.length; i++) {
+    for (let j = 0; j < place.rooms[i].days.length; j++) {
+      place.rooms[i].days[j].date = datesArray[j];
+      for (let k = 0; k < place.rooms[i].days[j].hours.length; k++) {
+        place.rooms[i].days[j].hours[k] = false;
       }
-      place.markModified(`place.silentSeats[${i}]`); // Mark this part of the document as modified
     }
-    for (let i = 0; i < place.rooms.length; i++) {
-      for (let j = 0; j < place.rooms[i].days.length; j++) {
-        place.rooms[i].days[j].date = datesArray[j];
-        for (let k = 0; k < place.rooms[i].days[j].hours.length; k++) {
-          place.rooms[i].days[j].hours[k] = false;
-        }
-      }
-      place.markModified(`place.rooms[${i}]`); // Mark this part of the document as modified
-    }
-  } else {
-    return next(new AppError('You are not accepted yet', 401));
+    place.markModified(`place.rooms[${i}]`); // Mark this part of the document as modified
   }
   await place.save();
   res.status(200).json({
@@ -363,9 +354,14 @@ exports.resetDaysForAllPlaces = catchAsync(async (req, res) => {
   const places = await Place.find();
   try {
     for (let i = 0; i < places.length; i++) {
-      await axios.post(
-        `https://spacezone-backend.cyclic.app/api/owner/resetDays/${places[i].id}}`
-      );
+      console.log(places[i].id);
+      await axios
+        .post(
+          `https://spacezone-backend.cyclic.app/api/owner/resetDays/${places[i].id}}`
+        )
+        .catch((err) => {
+          console.log(err);
+        });
     }
     res.status(200).json({
       status: 'Success',
