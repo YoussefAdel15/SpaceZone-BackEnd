@@ -273,7 +273,7 @@ exports.checkAvailabilityRooms = catchAsync(async (req, res, next) => {
 
 exports.getOpenHours = catchAsync(async (req, res, next) => {
   const currentPlace = await Place.findById(req.params.id);
-  let date = new Date();
+  let date = new Date(req.body.Date);
   const day = date.getDay();
   date = date.toISOString().split('T')[0];
   const openHours = currentPlace.openingHours[day];
