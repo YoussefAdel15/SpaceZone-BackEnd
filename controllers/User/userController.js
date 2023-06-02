@@ -85,10 +85,6 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
       return next(new AppError('User not found', 404));
     }
 
-    if (currentUser._id.toString() !== req.params.id) {
-      return next(new AppError('This account does not belong to you', 401));
-    }
-
     await User.findByIdAndDelete(currentUser._id);
 
     res.status(200).json({
