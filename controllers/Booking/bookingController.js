@@ -267,7 +267,6 @@ exports.checkAvailabilityRooms = catchAsync(async (req, res, next) => {
         endTime > 12 ? endTime - 12 : endTime
       } ${endTime > 12 ? 'PM' : 'AM'}`,
       RoomNumber: room.roomNumber,
-      dateIndex: j,
     });
   }
 }); //DONE
@@ -433,19 +432,14 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
           e.date.toISOString().split('T')[0] ===
           date.toISOString().split('T')[0]
         ) {
-          console.log('here');
           // update the hours to booked from the start time to the end time
           for (let j = startTime; j < endTime; j++) {
-            console.log(startTime, endTime, j);
             if (e.hours.array[j] === false) {
-              console.log('before', e.hours.array[j]);
               e.hours.array[j] = true;
-              console.log('after', e.hours.array[j]);
             } else {
               break;
             }
           }
-          console.log('afterChanged : ', e.hours.array);
           // mark the document as modified to save the changes
           currentPlace.markModified(
             `rooms.${response.data.RoomNumber - 1}.days`
