@@ -67,6 +67,9 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     owner: currentOwner.id,
     numberOfSilentSeats: req.body.numberOfSilentSeats,
     silentSeatPrice: req.body.silentSeatPrice,
+    availableFor: req.body.availableFor,
+    sharedAreaPhotos: req.body.sharedAreaPhotos,
+    silentRoomPhotos: req.body.silentRoomPhotos,
   });
   const MeetingRooms = req.body.MeetingRooms;
   const TrainingRooms = req.body.TrainingRooms;

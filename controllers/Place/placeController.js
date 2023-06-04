@@ -78,7 +78,21 @@ exports.addFeedback = catchAsync(async (req, res, next) => {
       feedbackNumber: req.body.feedbackNumber,
       userName: currentUser.userName,
     });
+    const feedbacks = place.feedbacks;
+    console.log(feedbacks);
+    var sum = 0;
+    for (let i = 0; i < feedbacks.length; i += 1) {
+      const feedbackDetails = await Feedback.findById(feedbacks[i]);
+      console.log(feedbackDetails);
+      console.log(feedbackDetails.feedbackNumber);
+      console.log(feedbackDetails.feedbackNumber + sum);
+      sum = sum + feedbackDetails.feedbackNumber;
+      console.log(sum);
+    }
+    console.log(sum);
     place.feedbacks.push(newFeedback);
+    sum = sum + newFeedback.feedbackNumber;
+    place.rating = sum / feedbacks.length;
     await place.save();
     await newFeedback.save();
     res.status(200).json({

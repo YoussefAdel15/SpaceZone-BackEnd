@@ -88,4 +88,15 @@ router.delete(
   userController.deleteUser
 );
 
+router.get(
+  '/getMyBookings',
+  authController.protect,
+  userController.getUserBookings
+);
+router.get(
+  '/getMyFeedbacks',
+  authController.protect,
+  userController.getUserFeedbacks
+);
+
 module.exports = router;

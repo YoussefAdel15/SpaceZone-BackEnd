@@ -30,12 +30,20 @@ const roomSchema = new mongoose.Schema({
     required: true,
   },
   days: [daysSchema],
+  roomPhotos: {
+    type: [
+      {
+        type: String,
+      },
+    ],
+    required: [true, 'Room Must Have Photos'],
+  },
   price: {
     type: Number,
   },
-  seats:{
-    type: Number
-  }
+  seats: {
+    type: Number,
+  },
 });
 
 const placeSchema = new mongoose.Schema({
@@ -164,6 +172,24 @@ const placeSchema = new mongoose.Schema({
   amenities: {
     type: [{ type: String }], // enums,
     default: [],
+  },
+  rating: {
+    type: Number,
+    default: 0,
+  },
+  silentRoomPhotos: {
+    type: [
+      {
+        type: String,
+      },
+    ],
+  },
+  sharedAreasPhotos: {
+    type: [
+      {
+        type: String,
+      },
+    ],
   },
 });
 

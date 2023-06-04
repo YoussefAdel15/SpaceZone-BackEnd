@@ -422,8 +422,6 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
       `https://spacezone-backend.cyclic.app/api/booking/checkAvailabilityRoom/${placeID}/${roomID}`,
       dataSentToSubAPI
     );
-    console.log(response.data);
-    console.log(response.data.RoomNumber - 1);
     if (response.data.status === 'success') {
       const priceToPay = room.price * numberOfHours;
       room.days.forEach((e) => {

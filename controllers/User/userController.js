@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const User = require('./../../Models/user');
 const catchAsync = require('./../../utils/catchAsync');
 const AppError = require('../../utils/appError');
+const Booking = require('./../../Models/booking');
+const Feedback = require('./../../Models/feedback');
 
 exports.getAllUsers = catchAsync(async (req, res) => {
   const users = await User.find();
@@ -94,4 +96,24 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   } catch (err) {
     return next(err);
   }
+});
+
+exports.getUserBookings = catchAsync(async (req, res, next) => {
+  const bookings = await Booking.find({ userID: req.user.id });
+
+  res.status(200).json({
+    status: 'Success',
+    message: `User Bookings has been found successfully`,
+    bookings,
+  });
+});
+
+exports.getUserFeedbacks = catchAsync(async (req, res, next) => {
+  const feedbacks = await Feedback.find({ userID: req.user.id });
+
+  res.status(200).json({
+    status: 'Success',
+    message: `User Feedbacks has been found successfully`,
+    feedbacks,
+  });
 });
