@@ -422,54 +422,119 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
       `https://spacezone-backend.cyclic.app/api/booking/checkAvailabilityRoom/${placeID}/${roomID}`,
       dataSentToSubAPI
     );
+    const priceToPay = room.price * numberOfHours;
     if (response.data.status === 'success') {
-      const priceToPay = room.price * numberOfHours;
-      room.days.forEach((e) => {
-        // check if the date is equal to the date he wants to book
-        if (
-          e.date.toISOString().split('T')[0] ===
-          date.toISOString().split('T')[0]
-        ) {
-          // update the hours to booked from the start time to the end time
-          for (let j = startTime; j < endTime; j++) {
-            if (e.hours.array[j] === false) {
-              e.hours.array[j] = true;
-            } else {
-              break;
-            }
-          }
-          // mark the document as modified to save the changes
-          currentPlace.markModified(
-            `rooms.${response.data.RoomNumber - 1}.days`
-          ); // Mark this part of the document as modified
+      // Payment start
+      if (req.body.paymentMethod === 'Credit Card') {
+        const paymobToken = await generatePaymobToken();
+        if (!paymobToken) {
+          return next(new AppError('Payment Failed !', 402));
         }
-      });
-      // create booking and add it to the user
-      const booking = await Booking.create({
-        placeID: req.params.pid,
-        userID: req.user.id,
-        placeName: currentPlace.placeName,
-        priceToPay,
-        bookingDate: date,
-        bookingHour: numberOfHours,
-        startTime: startTime > 12 ? startTime - 12 : startTime,
-        endTime: endTime > 12 ? endTime - 12 : endTime,
-        bookingRoom: room.roomNumber,
-        bookingStatus: true,
-        paymentStatus: false,
-        paymentMethod: req.body.paymentMethod,
-      });
-      user.booking.push(booking);
-      await user.save();
-      // update the seat hours to booked
-      console.log(response.data);
-      // save the changes to the database
-      await currentPlace.save();
-
-      res.status(200).json({
-        status: 'success',
-        message: 'Room booked successfully',
-      });
+        const id = await generatePaymentId(paymobToken, priceToPay, roomID);
+        if (!id) {
+          return next(new AppError('Payment Failed !', 402));
+        }
+        const data = await generatePaymentToken(paymobToken, priceToPay, id.id);
+        if (!data) {
+          return next(new AppError('Payment Failed !', 402));
+        }
+        // create booking and add it to the user
+        const booking = await Booking.create({
+          placeID: req.params.pid,
+          userID: req.user.id,
+          placeName: currentPlace.placeName,
+          priceToPay,
+          bookingDate: date,
+          bookingHour: numberOfHours,
+          startTime: startTime > 12 ? startTime - 12 : startTime,
+          endTime: endTime > 12 ? endTime - 12 : endTime,
+          bookingRoom: room.roomNumber,
+          bookingStatus: true,
+          paymentStatus: false,
+          paymentMethod: req.body.paymentMethod,
+        });
+        const url = `https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`;
+        res.status(200).json({
+          status: 'success',
+          message: 'Room booked successfully',
+          url,
+        });
+        //payment end
+        room.days.forEach((e) => {
+          // check if the date is equal to the date he wants to book
+          if (
+            e.date.toISOString().split('T')[0] ===
+            date.toISOString().split('T')[0]
+          ) {
+            // update the hours to booked from the start time to the end time
+            for (let j = startTime; j < endTime; j++) {
+              if (e.hours.array[j] === false) {
+                e.hours.array[j] = true;
+              } else {
+                break;
+              }
+            }
+            // mark the document as modified to save the changes
+            currentPlace.markModified(
+              `rooms.${response.data.RoomNumber - 1}.days`
+            ); // Mark this part of the document as modified
+          }
+        });
+        user.booking.push(booking);
+        await user.save();
+        // update the seat hours to booked
+        console.log(response.data);
+        // save the changes to the database
+        await currentPlace.save();
+      } else if (req.body.paymentMethod === 'Cash') {
+        // create booking and add it to the user
+        const booking = await Booking.create({
+          placeID: req.params.pid,
+          userID: req.user.id,
+          placeName: currentPlace.placeName,
+          priceToPay,
+          bookingDate: date,
+          bookingHour: numberOfHours,
+          startTime: startTime > 12 ? startTime - 12 : startTime,
+          endTime: endTime > 12 ? endTime - 12 : endTime,
+          bookingRoom: room.roomNumber,
+          bookingStatus: true,
+          paymentStatus: false,
+          paymentMethod: req.body.paymentMethod,
+        });
+        room.days.forEach((e) => {
+          // check if the date is equal to the date he wants to book
+          if (
+            e.date.toISOString().split('T')[0] ===
+            date.toISOString().split('T')[0]
+          ) {
+            // update the hours to booked from the start time to the end time
+            for (let j = startTime; j < endTime; j++) {
+              if (e.hours.array[j] === false) {
+                e.hours.array[j] = true;
+              } else {
+                break;
+              }
+            }
+            // mark the document as modified to save the changes
+            currentPlace.markModified(
+              `rooms.${response.data.RoomNumber - 1}.days`
+            ); // Mark this part of the document as modified
+          }
+        });
+        user.booking.push(booking);
+        await user.save();
+        // update the seat hours to booked
+        console.log(response.data);
+        // save the changes to the database
+        await currentPlace.save();
+        res.status(200).json({
+          status: 'success',
+          message: 'Room booked successfully',
+        });
+      }
+      if (req.body.paymentMethod === 'Cash') {
+      }
     } else if (
       response.data.status === 'fail' &&
       response.data.message === 'Room is Not available at the moment'
@@ -497,3 +562,83 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
     });
   }
 }); //DONE
+
+async function generatePaymobToken() {
+  const requestData = {
+    api_key: process.env.PAYMOB_API_KEY,
+  };
+
+  const response = await axios.post(process.env.PAYMOB_URL, requestData, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.data.token;
+}
+
+async function generatePaymentId(paymobToken, price, name) {
+  console.log(price, name);
+  const requestData = {
+    auth_token: paymobToken,
+    delivery_needed: 'false',
+    amount_cents: `${price * 100}`,
+    currency: 'EGP',
+    items: [
+      {
+        name: name,
+        amount_cents: price,
+        quantity: '1',
+      },
+    ],
+  };
+
+  const responseData = await axios.post(
+    process.env.PAYMOB_REGISTRATION_URL,
+    requestData,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  return responseData.data;
+}
+
+async function generatePaymentToken(paymobToken, price, id) {
+  const paymentJSON = {
+    auth_token: paymobToken,
+    amount_cents: `${price * 100}`,
+    expiration: 360000,
+    order_id: id,
+    billing_data: {
+      apartment: '803',
+      email: 'claudette09@exa.com',
+      floor: '42',
+      first_name: 'Clifford',
+      street: 'Ethan Land',
+      building: '8028',
+      phone_number: '+86(8)9135210487',
+      shipping_method: 'PKG',
+      postal_code: '01898',
+      city: 'Jaskolskiburgh',
+      country: 'CR',
+      last_name: 'Nicolas',
+      state: 'Utah',
+    },
+    currency: 'EGP',
+    integration_id: process.env.PAYMOB_INTEGRATION_ID,
+  };
+
+  const response = await axios.post(
+    process.env.PAYMOB_PAYMENT_KEY_REQUEST_URL,
+    paymentJSON,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  return response.data.token;
+}
