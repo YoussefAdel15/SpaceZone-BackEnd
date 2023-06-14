@@ -184,7 +184,7 @@ const placeSchema = new mongoose.Schema({
       },
     ],
   },
-  sharedAreasPhotos: {
+  sharedAreaPhotos: {
     type: [
       {
         type: String,

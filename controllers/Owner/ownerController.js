@@ -70,6 +70,7 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     availableFor: req.body.availableFor,
     sharedAreaPhotos: req.body.sharedAreaPhotos,
     silentRoomPhotos: req.body.silentRoomPhotos,
+    roomPhotos: req.body.roomPhotos,
   });
   const MeetingRooms = req.body.MeetingRooms;
   const TrainingRooms = req.body.TrainingRooms;
