@@ -1,54 +1,58 @@
 const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema({
-  placeID: {
+  placeID: { // place that user booked
     type: mongoose.Schema.ObjectId,
     ref: 'places',
     select: true,
   },
-  userID: {
+  userID: { // user who booked
     type: mongoose.Schema.ObjectId,
     ref: 'users',
     select: true,
   },
-  placeName: {
+  placeName: { // name of place
     type: String,
     required: true,
   },
-  priceToPay: {
+  priceToPay: { // price of booking
     type: Number,
     required: true,
   },
-  bookingDate: {
+  bookingDate: { // date of booking
     type: Date,
     required: true,
   },
-  bookingHour: {
+  bookingHour: {  // number of hours user want to book
     type: Number,
     required: true,
   },
-  bookingRoom: {
+  bookingRoom: {  // Room id user want to book
     type: Number,
     required: false,
   },
-  bookingSeat: {
-    type: Number,
+  bookingSeats: { // Seats id user want to book
+    type: [
+      {
+        type: Number,
+      }
+    ],
     required: false,
   },
-  bookingStatus: {
+  bookingStatus: {  // true if booking is confirmed by owner , false if owner didn't confirm
     type: Boolean,
     required: true,
   },
-  paymentStatus: {
+  paymentStatus: {  // true if payment is done , false if payment is not done
     type: Boolean,
     default: false,
     required: true,
   },
-  paymentMethod: {
+  paymentMethod: { // {Cash , Credit Card , Wallet}
     type: String,
     required: true,
   },
-  productID: {
+  productID: {  // in the future
     type: [
       {
         type: mongoose.Schema.ObjectId,
@@ -57,11 +61,11 @@ const bookingSchema = new mongoose.Schema({
       },
     ],
   },
-  startTime: {
+  startTime: {  // start time of booking
     type: Number,
     required: true,
   },
-  endTime: {
+  endTime: {  // end time of booking
     type: Number,
     required: false,
   },

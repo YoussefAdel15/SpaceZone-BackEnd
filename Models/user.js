@@ -50,6 +50,10 @@ const userSchema = new mongoose.Schema({
   passwordResetToken: String,
   passwordResetExpires: Date,
   passwordChangedAt: Date,
+  wallet: {
+    type: Number,
+    default: 0,
+  },
 });
 
 // Password Encryption

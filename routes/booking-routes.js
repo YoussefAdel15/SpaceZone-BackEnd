@@ -30,4 +30,10 @@ router.post(
   bookingController.bookRoom
 );
 
+router.post(
+  '/bookSeatSilent/:id',
+  authController.protect,
+  bookingController.bookSilentSeat
+);
+
 module.exports = router;
