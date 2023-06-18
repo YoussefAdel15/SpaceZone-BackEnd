@@ -350,6 +350,7 @@ exports.bookSeat = catchAsync(async (req, res, next) => {
           if (!data) {
             return next(new AppError('Payment Failed !', 402));
           }
+          console.log(id.id);
           // create booking and add it to the user
           const booking = await Booking.create({
             placeID: req.params.id,
@@ -770,7 +771,7 @@ exports.bookSilentSeat = catchAsync(async (req, res, next) => {
           res.status(200).json({
             status: 'success',
             message: 'Seat booked successfully',
-            url
+            url,
           });
         }else if (paymentMethod === "Cash"){
           const booking = await Booking.create({

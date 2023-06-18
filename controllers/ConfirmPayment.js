@@ -61,9 +61,9 @@ const failHTML = `
 `;
 
 exports.successPayment = catchAsync(async (req, res, next) => {
-  const { order_id} = req.query;
-    const voucher = await Voucher.findOne({ orderID: order_id });
-    const booking = await Booking.findOne({ orderID: order_id });
+  const { order } = req.query;
+    const voucher = await Voucher.findOne({ orderID: order });
+    const booking = await Booking.findOne({ orderID: order });
     if (voucher) {
       voucher.active = true;
       await voucher.save();
@@ -157,7 +157,7 @@ exports.successPayment = catchAsync(async (req, res, next) => {
       await booking.save();
     } else {
       return next(
-        new AppError('No voucher or booking found with this order id', 400)
+        new AppError(`No voucher or booking found with this order id ${order}`, 400)
       );
     }
     res.send(successHTML);
