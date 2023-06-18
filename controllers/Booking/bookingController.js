@@ -773,11 +773,11 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
   // console.log(booking.bookingDate)
   // console.log(booking.placeID);
   // console.log(place);
-  startTime
-  if(startTime)
-  if (booking.bookingDate >= tomorrowDate) {
-    // check if the booking date is greater than tomorrow date or equal to it then he can cancel it
+  // // startTime
+  // if(startTime)
+  if (booking.bookingDate > tomorrowDate) { // check if the booking date is greater than tomorrow date or equal to it then he can cancel it
     if (booking.bookingSeats.length > 0) {
+      // console.log("here")
       for (let i = 0; i < booking.bookingSeats.length; i++) {
         if (booking.bookingType === 'sharedAreaSeat') {
           place.seats[booking.bookingSeats[i]].days.forEach((e) => {
@@ -789,6 +789,7 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
               // update the hours to booked from the start time to the end time
               for (let j = startTime; j < endTime; j++) {
                 if (e.hours.array[j] === true) {
+                  console.log('here');
                   e.hours.array[j] = false;
                 } else {
                   break;
@@ -856,16 +857,16 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
     } else {
       await user.save();
     }
-    await user.save();
     await Booking.findByIdAndDelete(req.params.id);
     res.status(200).json({
       status: 'success',
       message: 'Booking canceled successfully',
     });
-  } else {
-    res.status(200).json({
-      status: 'fail',
-      message: 'You can not cancel a booking that has already passed',
-    });
   }
+  //  else {
+  //   res.status(200).json({
+  //     status: 'fail',
+  //     message: 'You can not cancel a booking that has already passed',
+  //   });
+  // }
 });
