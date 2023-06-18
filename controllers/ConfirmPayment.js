@@ -61,8 +61,7 @@ const failHTML = `
 `;
 
 exports.successPayment = catchAsync(async (req, res, next) => {
-  const { order_id, success } = req.query;
-  if (success === 'true') {
+  const { order_id} = req.query;
     const voucher = await Voucher.findOne({ orderID: order_id });
     const booking = await Booking.findOne({ orderID: order_id });
     if (voucher) {
@@ -162,9 +161,6 @@ exports.successPayment = catchAsync(async (req, res, next) => {
       );
     }
     res.send(successHTML);
-  } else {
-    res.send(failHTML);
-  }
 
   /////////////////////////////
 });
