@@ -553,6 +553,7 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
           paymentStatus: false,
           paymentMethod: req.body.paymentMethod,
           bookingType: 'Room',
+          orderID : id.id
         });
         const url = `https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`;
         res.status(200).json({
