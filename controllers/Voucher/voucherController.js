@@ -160,17 +160,16 @@ async function generatePaymentToken(paymobToken, price, id) {
 }
 
 exports.successPayment = catchAsync(async (req, res, next) => {
-    const { order } = req.body.order.id;
-    console.log(order);
-    const voucher = await Voucher.findOne({ orderID: order });
-    if (!voucher) {
-        return next(new AppError('Voucher not found', 400));
-    }
-    voucher.active = true;
-    await voucher.save();
-    res.status(200).json({
-        status: 'Success',
-        massage: `Voucher with code ${voucher.voucherCode} has been activated successfully`,
-        voucher,
-    });
+  const { order } = req.query;
+  const voucher = await Voucher.findOne({ orderID: order });
+  if (!voucher) {
+    return next(new AppError('Voucher not found', 400));
+  }
+  voucher.active = true;
+  await voucher.save();
+  res.status(200).json({
+    status: 'Success',
+    massage: `Voucher with code ${voucher.voucherCode} has been activated successfully`,
+    voucher,
+  });
 });
