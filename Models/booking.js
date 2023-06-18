@@ -69,5 +69,10 @@ const bookingSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  bookingType: {  // {Seat , Room}
+    type: String,
+    enum: ['silentSeat', 'Room' , 'sharedAreaSeat'],
+    required: true,
+  },
 });
 module.exports = booking = mongoose.model('booking', bookingSchema);

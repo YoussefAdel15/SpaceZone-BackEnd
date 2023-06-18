@@ -347,7 +347,8 @@ exports.bookSeat = catchAsync(async (req, res, next) => {
           bookingStatus: true,
           paymentStatus: false,
           paymentMethod: req.body.paymentMethod,
-          bookingSeats : availableSeatsIndex
+          bookingSeats: availableSeatsIndex,
+          bookingType: 'sharedAreaSeat',
         });
         user.booking.push(booking);
         await user.save();
@@ -453,6 +454,7 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
           bookingStatus: true,
           paymentStatus: false,
           paymentMethod: req.body.paymentMethod,
+          bookingType: 'Room',
         });
         const url = `https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`;
         res.status(200).json({
@@ -564,102 +566,104 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
   }
 }); //DONE
 
-
 exports.bookSilentSeat = catchAsync(async (req, res, next) => {
-    // startTime , date , endTime , numberOfSeats , paymentMethod
-    const currentPlace = await Place.findById(req.params.id);
-    const user = await User.findById(req.user.id);
-    const date = new Date(req.body.Date);
-    const startTime = req.body.startTime;
-    const endTime = req.body.endTime;
-    const numberOfHours = endTime - startTime;
-    const numberOfSeats = req.body.numberOfSeats;
-    let availableSeatsIndex = [];
-  
-    try {
-      const response = await axios.post(
-        `https://spacezone-backend.cyclic.app/api/booking/checkAvailabilitySilent/${req.params.id}`,
-        {
-          Date: date,
-          startTime,
-          endTime,
-          numberOfHours,
-          numberOfSeats,
-        }
-      );
-  
-      if (response.data.status === 'success') {
-        availableSeatsIndex = response.data.availableSeatsIndex;
-  
-        const priceToPay = currentPlace.hourPrice * numberOfHours * numberOfSeats;
-  
-        if (availableSeatsIndex.length > 0) {
-          // create booking and add it to the user
-          const booking = await Booking.create({
-            placeID: req.params.id,
-            userID: req.user.id,
-            placeName: currentPlace.placeName,
-            priceToPay,
-            bookingDate: date,
-            bookingHour: numberOfHours,
-            startTime: startTime > 12 ? startTime - 12 : startTime,
-            endTime: endTime > 12 ? endTime - 12 : endTime,
-            bookingSeat: availableSeatsIndex.length,
-            bookingStatus: true,
-            paymentStatus: false,
-            paymentMethod: req.body.paymentMethod,
-            bookingSeats : availableSeatsIndex
-          });
-          user.booking.push(booking);
-          await user.save();
-          // update the seat hours to booked
-          for (let i = 0; i < availableSeatsIndex.length; i++) {
-            currentPlace.silentSeats[availableSeatsIndex[i]].days.forEach((e) => {
-              // check if the date is equal to the date he wants to book
-              if (
-                e.date.toISOString().split('T')[0] ===
-                date.toISOString().split('T')[0]
-              ) {
-                // update the hours to booked from the start time to the end time
-                for (let j = startTime ; j < endTime; j++) {
-                  if (e.hours.array[j] === false) {
-                    e.hours.array[j] = true;
-                  } else {
-                    break;
-                  }
+  // startTime , date , endTime , numberOfSeats , paymentMethod
+  const currentPlace = await Place.findById(req.params.id);
+  const user = await User.findById(req.user.id);
+  const date = new Date(req.body.Date);
+  const startTime = req.body.startTime;
+  const endTime = req.body.endTime;
+  const numberOfHours = endTime - startTime;
+  const numberOfSeats = req.body.numberOfSeats;
+  let availableSeatsIndex = [];
+
+  try {
+    const response = await axios.post(
+      `https://spacezone-backend.cyclic.app/api/booking/checkAvailabilitySilent/${req.params.id}`,
+      {
+        Date: date,
+        startTime,
+        endTime,
+        numberOfHours,
+        numberOfSeats,
+      }
+    );
+
+    if (response.data.status === 'success') {
+      availableSeatsIndex = response.data.availableSeatsIndex;
+
+      const priceToPay = currentPlace.hourPrice * numberOfHours * numberOfSeats;
+
+      if (availableSeatsIndex.length > 0) {
+        // create booking and add it to the user
+        const booking = await Booking.create({
+          placeID: req.params.id,
+          userID: req.user.id,
+          placeName: currentPlace.placeName,
+          priceToPay,
+          bookingDate: date,
+          bookingHour: numberOfHours,
+          startTime: startTime > 12 ? startTime - 12 : startTime,
+          endTime: endTime > 12 ? endTime - 12 : endTime,
+          bookingSeat: availableSeatsIndex.length,
+          bookingStatus: true,
+          paymentStatus: false,
+          paymentMethod: req.body.paymentMethod,
+          bookingSeats: availableSeatsIndex,
+          bookingType: 'silentSeat',
+        });
+        user.booking.push(booking);
+        await user.save();
+        // update the seat hours to booked
+        for (let i = 0; i < availableSeatsIndex.length; i++) {
+          currentPlace.silentSeats[availableSeatsIndex[i]].days.forEach((e) => {
+            // check if the date is equal to the date he wants to book
+            if (
+              e.date.toISOString().split('T')[0] ===
+              date.toISOString().split('T')[0]
+            ) {
+              // update the hours to booked from the start time to the end time
+              for (let j = startTime; j < endTime; j++) {
+                if (e.hours.array[j] === false) {
+                  e.hours.array[j] = true;
+                } else {
+                  break;
                 }
-                // mark the document as modified to save the changes
-                currentPlace.markModified(`silentSeats.${availableSeatsIndex[i]}.days`); // Mark this part of the document as modified
               }
-            });
-          }
-          // save the changes to the database
-          await currentPlace.save();
-  
-          res.status(200).json({
-            status: 'success',
-            message: 'Seat booked successfully',
-          });
-        } else {
-          res.status(200).json({
-            status: 'fail',
-            message: 'No available seats at the moment',
+              // mark the document as modified to save the changes
+              currentPlace.markModified(
+                `silentSeats.${availableSeatsIndex[i]}.days`
+              ); // Mark this part of the document as modified
+            }
           });
         }
+        // save the changes to the database
+        await currentPlace.save();
+
+        res.status(200).json({
+          status: 'success',
+          message: 'Seat booked successfully',
+        });
       } else {
-        res.status(500).json({
+        res.status(200).json({
           status: 'fail',
-          message: 'Error fetching data from sub-API',
+          message: 'No available seats at the moment',
         });
       }
-    } catch (error) {
-      // handle errors
+    } else {
       res.status(500).json({
-        status: 'error',
+        status: 'fail',
         message: 'Error fetching data from sub-API',
-        error: error.message,
       });
     }
+  } catch (error) {
+    // handle errors
+    res.status(500).json({
+      status: 'error',
+      message: 'Error fetching data from sub-API',
+      error: error.message,
+    });
+  }
 });
 
 //GENERAL FUNCTIONS
@@ -760,13 +764,17 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
   const startTime = booking.startTime;
   const endTime = booking.endTime;
   const numberOfHours = endTime - startTime;
-  const place = Place.findById(booking.placeID);
+  const placeQuery = Place.findById(booking.placeID); // Assuming 'booking.placeID' contains the ID of the desired place
+  const place = await placeQuery.exec(); // Execute the query and wait for the result
   const priceToPay = booking.priceToPay;
   const tomorrowDate = new Date();
   tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  console.log(tomorrowDate)
-  console.log(booking.bookingDate)
-  if(booking.bookingDate >= tomorrowDate){ // check if the booking date is greater than tomorrow date or equal to it then he can cancel it
+  // console.log(tomorrowDate)
+  // console.log(booking.bookingDate)
+  console.log(booking.placeID);
+  console.log(place);
+  if (booking.bookingDate >= tomorrowDate) {
+    // check if the booking date is greater than tomorrow date or equal to it then he can cancel it
     if (booking.bookingSeats.length > 0) {
       for (let i = 0; i < booking.bookingSeats; i++) {
         place.seats[booking.bookingSeats[i]].days.forEach((e) => {
@@ -814,10 +822,13 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
     }
     await place.save();
     user.booking.splice(user.booking.indexOf(booking), 1);
-    if(booking.paymentMethod === 'Credit Card' || booking.paymentMethod === 'Wallet'){
-    user.wallet += priceToPay; // add the price to the user wallet
-    await user.save();
-    }else{
+    if (
+      booking.paymentMethod === 'Credit Card' ||
+      booking.paymentMethod === 'Wallet'
+    ) {
+      user.wallet += priceToPay; // add the price to the user wallet
+      await user.save();
+    } else {
       await user.save();
     }
     await user.save();
@@ -826,7 +837,7 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
       status: 'success',
       message: 'Booking canceled successfully',
     });
-  } else{
+  } else {
     res.status(200).json({
       status: 'fail',
       message: 'You can not cancel a booking that has already passed',
