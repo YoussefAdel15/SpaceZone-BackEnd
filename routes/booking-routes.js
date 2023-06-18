@@ -36,4 +36,10 @@ router.post(
   bookingController.bookSilentSeat
 );
 
+router.post(
+  '/cancelBooking/:id',
+  authController.protect,
+  bookingController.cancelBooking
+);
+
 module.exports = router;

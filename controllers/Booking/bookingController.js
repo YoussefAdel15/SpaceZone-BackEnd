@@ -347,6 +347,7 @@ exports.bookSeat = catchAsync(async (req, res, next) => {
           bookingStatus: true,
           paymentStatus: false,
           paymentMethod: req.body.paymentMethod,
+          bookingSeats : availableSeatsIndex
         });
         user.booking.push(booking);
         await user.save();
@@ -563,85 +564,6 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
   }
 }); //DONE
 
-async function generatePaymobToken() {
-  const requestData = {
-    api_key: process.env.PAYMOB_API_KEY,
-  };
-
-  const response = await axios.post(process.env.PAYMOB_URL, requestData, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  return response.data.token;
-}
-
-async function generatePaymentId(paymobToken, price, name) {
-  console.log(price, name);
-  const requestData = {
-    auth_token: paymobToken,
-    delivery_needed: 'false',
-    amount_cents: `${price * 100}`,
-    currency: 'EGP',
-    items: [
-      {
-        name: name,
-        amount_cents: price,
-        quantity: '1',
-      },
-    ],
-  };
-
-  const responseData = await axios.post(
-    process.env.PAYMOB_REGISTRATION_URL,
-    requestData,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-
-  return responseData.data;
-}
-
-async function generatePaymentToken(paymobToken, price, id) {
-  const paymentJSON = {
-    auth_token: paymobToken,
-    amount_cents: `${price * 100}`,
-    expiration: 360000,
-    order_id: id,
-    billing_data: {
-      apartment: '803',
-      email: 'claudette09@exa.com',
-      floor: '42',
-      first_name: 'Clifford',
-      street: 'Ethan Land',
-      building: '8028',
-      phone_number: '+86(8)9135210487',
-      shipping_method: 'PKG',
-      postal_code: '01898',
-      city: 'Jaskolskiburgh',
-      country: 'CR',
-      last_name: 'Nicolas',
-      state: 'Utah',
-    },
-    currency: 'EGP',
-    integration_id: process.env.PAYMOB_INTEGRATION_ID,
-  };
-
-  const response = await axios.post(
-    process.env.PAYMOB_PAYMENT_KEY_REQUEST_URL,
-    paymentJSON,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-
-  return response.data.token;
-}
 
 exports.bookSilentSeat = catchAsync(async (req, res, next) => {
     // startTime , date , endTime , numberOfSeats , paymentMethod
@@ -738,4 +660,176 @@ exports.bookSilentSeat = catchAsync(async (req, res, next) => {
         error: error.message,
       });
     }
+});
+
+//GENERAL FUNCTIONS
+
+function checkWalletBalance(user, priceToPay) {
+  if (user.wallet < priceToPay) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+// PayMob Functions
+async function generatePaymobToken() {
+  const requestData = {
+    api_key: process.env.PAYMOB_API_KEY,
+  };
+
+  const response = await axios.post(process.env.PAYMOB_URL, requestData, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.data.token;
+}
+
+async function generatePaymentId(paymobToken, price, name) {
+  console.log(price, name);
+  const requestData = {
+    auth_token: paymobToken,
+    delivery_needed: 'false',
+    amount_cents: `${price * 100}`,
+    currency: 'EGP',
+    items: [
+      {
+        name: name,
+        amount_cents: price,
+        quantity: '1',
+      },
+    ],
+  };
+
+  const responseData = await axios.post(
+    process.env.PAYMOB_REGISTRATION_URL,
+    requestData,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  return responseData.data;
+}
+
+async function generatePaymentToken(paymobToken, price, id) {
+  const paymentJSON = {
+    auth_token: paymobToken,
+    amount_cents: `${price * 100}`,
+    expiration: 360000,
+    order_id: id,
+    billing_data: {
+      apartment: '803',
+      email: 'claudette09@exa.com',
+      floor: '42',
+      first_name: 'Clifford',
+      street: 'Ethan Land',
+      building: '8028',
+      phone_number: '+86(8)9135210487',
+      shipping_method: 'PKG',
+      postal_code: '01898',
+      city: 'Jaskolskiburgh',
+      country: 'CR',
+      last_name: 'Nicolas',
+      state: 'Utah',
+    },
+    currency: 'EGP',
+    integration_id: process.env.PAYMOB_INTEGRATION_ID,
+  };
+
+  const response = await axios.post(
+    process.env.PAYMOB_PAYMENT_KEY_REQUEST_URL,
+    paymentJSON,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  return response.data.token;
+}
+
+exports.cancelBooking = catchAsync(async (req, res, next) => {
+  const booking = await Booking.findById(req.params.id);
+  const user = await User.findById(req.user.id);
+  const date = new Date(booking.bookingDate);
+  const startTime = booking.startTime;
+  const endTime = booking.endTime;
+  const numberOfHours = endTime - startTime;
+  const place = Place.findById(booking.placeID);
+  const priceToPay = booking.priceToPay;
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  console.log(tomorrowDate)
+  console.log(booking.bookingDate)
+  if(booking.bookingDate >= tomorrowDate){ // check if the booking date is greater than tomorrow date or equal to it then he can cancel it
+    if (booking.bookingSeats.length > 0) {
+      for (let i = 0; i < booking.bookingSeats; i++) {
+        place.seats[booking.bookingSeats[i]].days.forEach((e) => {
+          // check if the date is equal to the date he wants to book
+          if (
+            e.date.toISOString().split('T')[0] ===
+            date.toISOString().split('T')[0]
+          ) {
+            // update the hours to booked from the start time to the end time
+            for (let j = startTime; j < endTime; j++) {
+              if (e.hours.array[j] === true) {
+                e.hours.array[j] = false;
+              } else {
+                break;
+              }
+            }
+            // mark the document as modified to save the changes
+            place.markModified(`seats.${booking.bookingSeats[i]}.days`); // Mark this part of the document as modified
+          }
+        });
+      }
+    } else if (booking.bookingRoom) {
+      place.rooms.forEach((e) => {
+        if (e.roomNumber === booking.bookingRoom) {
+          e.days.forEach((e) => {
+            // check if the date is equal to the date he wants to book
+            if (
+              e.date.toISOString().split('T')[0] ===
+              date.toISOString().split('T')[0]
+            ) {
+              // update the hours to booked from the start time to the end time
+              for (let j = startTime; j < endTime; j++) {
+                if (e.hours.array[j] === true) {
+                  e.hours.array[j] = false;
+                } else {
+                  break;
+                }
+              }
+              // mark the document as modified to save the changes
+              place.markModified(`rooms.${booking.bookingRoom}.days`); // Mark this part of the document as modified
+            }
+          });
+        }
+      });
+    }
+    await place.save();
+    user.booking.splice(user.booking.indexOf(booking), 1);
+    if(booking.paymentMethod === 'Credit Card' || booking.paymentMethod === 'Wallet'){
+    user.wallet += priceToPay; // add the price to the user wallet
+    await user.save();
+    }else{
+      await user.save();
+    }
+    await user.save();
+    await Booking.findByIdAndDelete(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      message: 'Booking canceled successfully',
+    });
+  } else{
+    res.status(200).json({
+      status: 'fail',
+      message: 'You can not cancel a booking that has already passed',
+    });
+  }
 });
