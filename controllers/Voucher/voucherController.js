@@ -43,6 +43,7 @@ exports.payVoucher = async (req, res, next) => {
     const voucher = await Voucher.create({
       voucherCode: generateVoucherCode(generateRandomNumber()),
       voucherValue: req.body.voucherValue,
+      orderID: id.id,
     });
     const url = `https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`;
     res.status(200).json({
@@ -157,3 +158,18 @@ async function generatePaymentToken(paymobToken, price, id) {
 
   return response.data.token;
 }
+
+exports.successPayment = catchAsync(async (req, res, next) => {
+    const { order } = req.query;
+    const voucher = await Voucher.findOne({ orderID: order });
+    if (!voucher) {
+        return next(new AppError('Voucher not found', 400));
+    }
+    voucher.active = true;
+    await voucher.save();
+    res.status(200).json({
+        status: 'Success',
+        massage: `Voucher with code ${voucher.voucherCode} has been activated successfully`,
+        voucher,
+    });
+});

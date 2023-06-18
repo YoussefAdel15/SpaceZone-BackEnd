@@ -23,5 +23,9 @@ const voucherSchema = new mongoose.Schema({
     default: false,
     required: true,
     },
+    orderID :{
+        type: String,
+        required: true,
+    }
 });
 module.exports = voucher = mongoose.model('voucher', voucherSchema);
