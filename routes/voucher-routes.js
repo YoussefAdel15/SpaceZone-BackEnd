@@ -8,6 +8,6 @@ router.post('/payVoucher', voucherController.payVoucher);
 
 router.post('/consumeVoucher', authController.protect , voucherController.consumeVoucher);
 
-router.get('/successVoucher', voucherController.successPayment);
+// router.get('/successVoucher', voucherController.successPayment);
 
 module.exports = router;

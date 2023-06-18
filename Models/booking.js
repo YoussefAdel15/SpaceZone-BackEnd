@@ -74,5 +74,8 @@ const bookingSchema = new mongoose.Schema({
     enum: ['silentSeat', 'Room' , 'sharedAreaSeat'],
     required: true,
   },
+  orderID :{
+    type: String,
+  }
 });
 module.exports = booking = mongoose.model('booking', bookingSchema);

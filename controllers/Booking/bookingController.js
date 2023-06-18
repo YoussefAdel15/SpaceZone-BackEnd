@@ -331,65 +331,163 @@ exports.bookSeat = catchAsync(async (req, res, next) => {
       availableSeatsIndex = response.data.availableSeatsIndex;
 
       const priceToPay = currentPlace.hourPrice * numberOfHours * numberOfSeats;
-
-      if (availableSeatsIndex.length > 0) {
-        // create booking and add it to the user
-        const booking = await Booking.create({
-          placeID: req.params.id,
-          userID: req.user.id,
-          placeName: currentPlace.placeName,
-          priceToPay,
-          bookingDate: date,
-          bookingHour: numberOfHours,
-          startTime: startTime,
-          endTime: endTime,
-          bookingSeat: availableSeatsIndex.length,
-          bookingStatus: true,
-          paymentStatus: false,
-          paymentMethod: req.body.paymentMethod,
-          bookingSeats: availableSeatsIndex,
-          bookingType: 'sharedAreaSeat',
-        });
-        user.booking.push(booking);
-        await user.save();
-        // update the seat hours to booked
-        for (let i = 0; i < availableSeatsIndex.length; i++) {
-          currentPlace.seats[availableSeatsIndex[i]].days.forEach((e) => {
-            // check if the date is equal to the date he wants to book
-            if (
-              e.date.toISOString().split('T')[0] ===
-              date.toISOString().split('T')[0]
-            ) {
-              // update the hours to booked from the start time to the end time
-              for (let j = startTime; j < endTime; j++) {
-                if (e.hours.array[j] === false) {
-                  e.hours.array[j] = true;
-                } else {
-                  break;
+      const paymentMethod = req.body.paymentMethod;
+        // Payment start
+        if (paymentMethod === 'Credit Card') {
+          const paymobToken = await generatePaymobToken();
+          if (!paymobToken) {
+            return next(new AppError('Payment Failed !', 402));
+          }
+          const id = await generatePaymentId(paymobToken, priceToPay, "SharedAreaSeats");
+          if (!id) {
+            return next(new AppError('Payment Failed !', 402));
+          }
+          const data = await generatePaymentToken(
+            paymobToken,
+            priceToPay,
+            id.id
+          );
+          if (!data) {
+            return next(new AppError('Payment Failed !', 402));
+          }
+          // create booking and add it to the user
+          const booking = await Booking.create({
+            placeID: req.params.id,
+            userID: req.user.id,
+            placeName: currentPlace.placeName,
+            priceToPay,
+            bookingDate: date,
+            bookingHour: numberOfHours,
+            startTime: startTime,
+            endTime: endTime,
+            bookingSeat: availableSeatsIndex.length,
+            bookingStatus: true,
+            paymentStatus: false,
+            paymentMethod: req.body.paymentMethod,
+            bookingSeats: availableSeatsIndex,
+            bookingType: 'sharedAreaSeat',
+            orderID : id.id
+          });
+          user.booking.push(booking);
+          await user.save();
+          const url = `https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`;
+          res.status(200).json({
+            status: 'success',
+            message: 'Seat booked successfully',
+            url
+          });
+        } else if (paymentMethod === "Cash") {
+          const booking = await Booking.create({
+            placeID: req.params.id,
+            userID: req.user.id,
+            placeName: currentPlace.placeName,
+            priceToPay,
+            bookingDate: date,
+            bookingHour: numberOfHours,
+            startTime: startTime,
+            endTime: endTime,
+            bookingSeat: availableSeatsIndex.length,
+            bookingStatus: true,
+            paymentStatus: false,
+            paymentMethod: req.body.paymentMethod,
+            bookingSeats: availableSeatsIndex,
+            bookingType: 'sharedAreaSeat',
+          });
+          user.booking.push(booking);
+          await user.save();
+          // update the seat hours to booked
+          for (let i = 0; i < availableSeatsIndex.length; i++) {
+            currentPlace.seats[availableSeatsIndex[i]].days.forEach((e) => {
+              // check if the date is equal to the date he wants to book
+              if (
+                e.date.toISOString().split('T')[0] ===
+                date.toISOString().split('T')[0]
+              ) {
+                // update the hours to booked from the start time to the end time
+                for (let j = startTime; j < endTime; j++) {
+                  if (e.hours.array[j] === false) {
+                    e.hours.array[j] = true;
+                  } else {
+                    break;
+                  }
                 }
+                // mark the document as modified to save the changes
+                currentPlace.markModified(`seats.${availableSeatsIndex[i]}.days`); // Mark this part of the document as modified
               }
-              // mark the document as modified to save the changes
-              currentPlace.markModified(`seats.${availableSeatsIndex[i]}.days`); // Mark this part of the document as modified
+            });
+          }
+          // save the changes to the database
+          await currentPlace.save();
+          res.status(200).json({
+            status: 'success',
+            message: 'Seat booked successfully',
+          });
+        } else if(paymentMethod === "Wallet"){
+          if(user.wallet < priceToPay){
+            res.status(200).json({
+              status: 'fail',
+              message: 'Not enough balance in your wallet',
+            });
+          }else{
+            const booking = await Booking.create({
+              placeID: req.params.id,
+              userID: req.user.id,
+              placeName: currentPlace.placeName,
+              priceToPay,
+              bookingDate: date,
+              bookingHour: numberOfHours,
+              startTime: startTime,
+              endTime: endTime,
+              bookingSeat: availableSeatsIndex.length,
+              bookingStatus: true,
+              paymentStatus: true,
+              paymentMethod: req.body.paymentMethod,
+              bookingSeats: availableSeatsIndex,
+              bookingType: 'sharedAreaSeat',
+            });
+            user.booking.push(booking);
+            await user.save();
+            // update the seat hours to booked
+            for (let i = 0; i < availableSeatsIndex.length; i++) {
+              currentPlace.seats[availableSeatsIndex[i]].days.forEach((e) => {
+                // check if the date is equal to the date he wants to book
+                if (
+                  e.date.toISOString().split('T')[0] ===
+                  date.toISOString().split('T')[0]
+                ) {
+                  // update the hours to booked from the start time to the end time
+                  for (let j = startTime; j < endTime; j++) {
+                    if (e.hours.array[j] === false) {
+                      e.hours.array[j] = true;
+                    } else {
+                      break;
+                    }
+                  }
+                  // mark the document as modified to save the changes
+                  currentPlace.markModified(`seats.${availableSeatsIndex[i]}.days`); // Mark this part of the document as modified
+                }
+              });
             }
+            user.wallet -= priceToPay;
+            await user.save();
+            // save the changes to the database
+            await currentPlace.save();
+            res.status(200).json({
+              status: 'success',
+              message: 'Seat booked successfully',
+            });
+          }
+        } else{
+          res.status(200).json({
+            status: 'fail',
+            message: 'Invalid payment method',
           });
         }
-        // save the changes to the database
-        await currentPlace.save();
-
-        res.status(200).json({
-          status: 'success',
-          message: 'Seat booked successfully',
-        });
-      } else {
-        res.status(200).json({
-          status: 'fail',
-          message: 'No available seats at the moment',
-        });
-      }
-    } else {
-      res.status(500).json({
+      
+    }else{
+      res.status(200).json({
         status: 'fail',
-        message: 'Error fetching data from sub-API',
+        message: 'No available seats at the moment',
       });
     }
   } catch (error) {
@@ -462,33 +560,10 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
           message: 'Room booked successfully',
           url,
         });
-        //payment end
-        room.days.forEach((e) => {
-          // check if the date is equal to the date he wants to book
-          if (
-            e.date.toISOString().split('T')[0] ===
-            date.toISOString().split('T')[0]
-          ) {
-            // update the hours to booked from the start time to the end time
-            for (let j = startTime; j < endTime; j++) {
-              if (e.hours.array[j] === false) {
-                e.hours.array[j] = true;
-              } else {
-                break;
-              }
-            }
-            // mark the document as modified to save the changes
-            currentPlace.markModified(
-              `rooms.${response.data.RoomNumber - 1}.days`
-            ); // Mark this part of the document as modified
-          }
-        });
+
         user.booking.push(booking);
         await user.save();
-        // update the seat hours to booked
-        console.log(response.data);
-        // save the changes to the database
-        await currentPlace.save();
+        //payment end
       } else if (req.body.paymentMethod === 'Cash') {
         // create booking and add it to the user
         const booking = await Booking.create({
@@ -535,8 +610,65 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
           status: 'success',
           message: 'Room booked successfully',
         });
-      }
-      if (req.body.paymentMethod === 'Cash') {
+      } else if (req.body.paymentMethod === 'Wallet') {
+        if(user.wallet < priceToPay){
+          res.status(200).json({
+            status: 'fail',
+            message: 'Not enough balance in your wallet',
+          });
+        }else{
+          const booking = await Booking.create({
+            placeID: req.params.pid,
+            userID: req.user.id,
+            placeName: currentPlace.placeName,
+            priceToPay,
+            bookingDate: date,
+            bookingHour: numberOfHours,
+            startTime: startTime > 12 ? startTime - 12 : startTime,
+            endTime: endTime > 12 ? endTime - 12 : endTime,
+            bookingRoom: room.roomNumber,
+            bookingStatus: true,
+            paymentStatus: true,
+            paymentMethod: req.body.paymentMethod,
+            bookingType: 'Room',
+          });
+          user.booking.push(booking);
+          await user.save();
+          // update the seat hours to booked
+          room.days.forEach((e) => {
+            // check if the date is equal to the date he wants to book
+            if (
+              e.date.toISOString().split('T')[0] ===
+              date.toISOString().split('T')[0]
+            ) {
+              // update the hours to booked from the start time to the end time
+              for (let j = startTime; j < endTime; j++) {
+                if (e.hours.array[j] === false) {
+                  e.hours.array[j] = true;
+                } else {
+                  break;
+                }
+              }
+              // mark the document as modified to save the changes
+              currentPlace.markModified(
+                `rooms.${response.data.RoomNumber - 1}.days`
+              ); // Mark this part of the document as modified
+            }
+          });
+          user.wallet -= priceToPay;
+          await user.save();
+          // save the changes to the database
+          await currentPlace.save();
+          res.status(200).json({
+            status: 'success',
+            message: 'Room booked successfully',
+          });
+        }
+      }else{
+        res.status(200).json({
+          status: 'fail',
+          message: 'Invalid payment method',
+        });
       }
     } else if (
       response.data.status === 'fail' &&
@@ -593,67 +725,164 @@ exports.bookSilentSeat = catchAsync(async (req, res, next) => {
       availableSeatsIndex = response.data.availableSeatsIndex;
 
       const priceToPay = currentPlace.hourPrice * numberOfHours * numberOfSeats;
+      const paymentMethod = req.body.paymentMethod;
 
       if (availableSeatsIndex.length > 0) {
         // create booking and add it to the user
-        const booking = await Booking.create({
-          placeID: req.params.id,
-          userID: req.user.id,
-          placeName: currentPlace.placeName,
-          priceToPay,
-          bookingDate: date,
-          bookingHour: numberOfHours,
-          startTime: startTime > 12 ? startTime - 12 : startTime,
-          endTime: endTime > 12 ? endTime - 12 : endTime,
-          bookingSeat: availableSeatsIndex.length,
-          bookingStatus: true,
-          paymentStatus: false,
-          paymentMethod: req.body.paymentMethod,
-          bookingSeats: availableSeatsIndex,
-          bookingType: 'silentSeat',
-        });
-        user.booking.push(booking);
-        await user.save();
-        // update the seat hours to booked
-        for (let i = 0; i < availableSeatsIndex.length; i++) {
-          currentPlace.silentSeats[availableSeatsIndex[i]].days.forEach((e) => {
-            // check if the date is equal to the date he wants to book
-            if (
-              e.date.toISOString().split('T')[0] ===
-              date.toISOString().split('T')[0]
-            ) {
-              // update the hours to booked from the start time to the end time
-              for (let j = startTime; j < endTime; j++) {
-                if (e.hours.array[j] === false) {
-                  e.hours.array[j] = true;
-                } else {
-                  break;
-                }
-              }
-              // mark the document as modified to save the changes
-              currentPlace.markModified(
-                `silentSeats.${availableSeatsIndex[i]}.days`
-              ); // Mark this part of the document as modified
-            }
+        if(paymentMethod === "Credit Card"){
+          const paymobToken = await generatePaymobToken();
+          if (!paymobToken) {
+            return next(new AppError('Payment Failed !', 402));
+          }
+          const id = await generatePaymentId(paymobToken, priceToPay, "SilentSeat");
+          if (!id) {
+            return next(new AppError('Payment Failed !', 402));
+          }
+          const data = await generatePaymentToken(
+            paymobToken,
+            priceToPay,
+            id.id
+          );
+          if (!data) {
+            return next(new AppError('Payment Failed !', 402));
+          }
+          const booking = await Booking.create({
+            placeID: req.params.id,
+            userID: req.user.id,
+            placeName: currentPlace.placeName,
+            priceToPay,
+            bookingDate: date,
+            bookingHour: numberOfHours,
+            startTime: startTime ,
+            endTime: endTime,
+            bookingSeat: availableSeatsIndex.length,
+            bookingStatus: true,
+            paymentStatus: false,
+            paymentMethod: req.body.paymentMethod,
+            bookingSeats: availableSeatsIndex,
+            bookingType: 'silentSeat',
+            orderID : id.id
           });
+          user.booking.push(booking);
+          await user.save();
+          const url = `https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`;
+          res.status(200).json({
+            status: 'success',
+            message: 'Seat booked successfully',
+            url
+          });
+        }else if (paymentMethod === "Cash"){
+          const booking = await Booking.create({
+            placeID: req.params.id,
+            userID: req.user.id,
+            placeName: currentPlace.placeName,
+            priceToPay,
+            bookingDate: date,
+            bookingHour: numberOfHours,
+            startTime: startTime,
+            endTime: endTime,
+            bookingSeat: availableSeatsIndex.length,
+            bookingStatus: true,
+            paymentStatus: false,
+            paymentMethod: req.body.paymentMethod,
+            bookingSeats: availableSeatsIndex,
+            bookingType: 'silentSeat',
+          });
+          user.booking.push(booking);
+          await user.save();
+          // update the seat hours to booked
+          for (let i = 0; i < availableSeatsIndex.length; i++) {
+            currentPlace.silentSeats[availableSeatsIndex[i]].days.forEach((e) => {
+              // check if the date is equal to the date he wants to book
+              if (
+                e.date.toISOString().split('T')[0] ===
+                date.toISOString().split('T')[0]
+              ) {
+                // update the hours to booked from the start time to the end time
+                for (let j = startTime; j < endTime; j++) {
+                  if (e.hours.array[j] === false) {
+                    e.hours.array[j] = true;
+                  } else {
+                    break;
+                  }
+                }
+                // mark the document as modified to save the changes
+                currentPlace.markModified(`silentSeats.${availableSeatsIndex[i]}.days`); // Mark this part of the document as modified
+              }
+            });
+          }
+          // save the changes to the database
+          await currentPlace.save();
+          res.status(200).json({
+            status: 'success',
+            message: 'Seat booked successfully',
+          });
+        }else if(paymentMethod==="Wallet"){
+          if(user.wallet < priceToPay){
+            res.status(200).json({
+              status: 'fail',
+              message: 'Not enough balance in your wallet',
+            });
+          }else{
+            const booking = await Booking.create({
+              placeID: req.params.id,
+              userID: req.user.id,
+              placeName: currentPlace.placeName,
+              priceToPay,
+              bookingDate: date,
+              bookingHour: numberOfHours,
+              startTime: startTime,
+              endTime: endTime,
+              bookingSeat: availableSeatsIndex.length,
+              bookingStatus: true,
+              paymentStatus: true,
+              paymentMethod: req.body.paymentMethod,
+              bookingSeats: availableSeatsIndex,
+              bookingType: 'silentSeat',
+            });
+            user.booking.push(booking);
+            await user.save();
+            // update the seat hours to booked
+            for (let i = 0; i < availableSeatsIndex.length; i++) {
+              currentPlace.silentSeats[availableSeatsIndex[i]].days.forEach((e) => {
+                // check if the date is equal to the date he wants to book
+                if (
+                  e.date.toISOString().split('T')[0] ===
+                  date.toISOString().split('T')[0]
+                ) {
+                  // update the hours to booked from the start time to the end time
+                  for (let j = startTime; j < endTime; j++) {
+                    if (e.hours.array[j] === false) {
+                      e.hours.array[j] = true;
+                    } else {
+                      break;
+                    }
+                  }
+                  // mark the document as modified to save the changes
+                  currentPlace.markModified(`silentSeats.${availableSeatsIndex[i]}.days`); // Mark this part of the document as modified
+                }
+              });
+            }
+            user.wallet -= priceToPay;
+            await user.save();
+            // save the changes to the database
+            await currentPlace.save();
+            res.status(200).json({
+              status: 'success',
+              message: 'Seat booked successfully',
+            });
+          }
         }
-        // save the changes to the database
-        await currentPlace.save();
-
-        res.status(200).json({
-          status: 'success',
-          message: 'Seat booked successfully',
-        });
       } else {
         res.status(200).json({
           status: 'fail',
-          message: 'No available seats at the moment',
+          message: 'Invalid payment method',
         });
       }
     } else {
-      res.status(500).json({
+      res.status(200).json({
         status: 'fail',
-        message: 'Error fetching data from sub-API',
+        message: 'No available seats at the moment',
       });
     }
   } catch (error) {
@@ -662,6 +891,115 @@ exports.bookSilentSeat = catchAsync(async (req, res, next) => {
       status: 'error',
       message: 'Error fetching data from sub-API',
       error: error.message,
+    });
+  }
+});
+
+exports.cancelBooking = catchAsync(async (req, res, next) => {
+  const booking = await Booking.findById(req.params.id);
+  const user = await User.findById(req.user.id);
+  const date = new Date(booking.bookingDate);
+  const startTime = booking.startTime;
+  const endTime = booking.endTime;
+  const numberOfHours = endTime - startTime;
+  const placeQuery = Place.findById(booking.placeID); // Assuming 'booking.placeID' contains the ID of the desired place
+  const place = await placeQuery.exec(); // Execute the query and wait for the result
+  const priceToPay = booking.priceToPay;
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  if (booking.bookingDate > tomorrowDate) {
+    // check if the booking date is greater than tomorrow date or equal to it then he can cancel it
+    if (booking.bookingSeats.length > 0) {
+      // console.log("here")
+      for (let i = 0; i < booking.bookingSeats.length; i++) {
+        if (booking.bookingType === 'sharedAreaSeat') {
+          place.seats[booking.bookingSeats[i]].days.forEach((e) => {
+            // check if the date is equal to the date he wants to book
+            if (
+              e.date.toISOString().split('T')[0] ===
+              date.toISOString().split('T')[0]
+            ) {
+              // update the hours to booked from the start time to the end time
+              for (let j = startTime; j < endTime; j++) {
+                if (e.hours.array[j] === true) {
+                  console.log('here');
+                  e.hours.array[j] = false;
+                } else {
+                  break;
+                }
+              }
+              // mark the document as modified to save the changes
+              place.markModified(`seats.${booking.bookingSeats[i]}.days`); // Mark this part of the document as modified
+            }
+          });
+          await place.save();
+        } else if (booking.bookingType === 'silentSeat') {
+          place.silentSeats[booking.bookingSeats[i]].days.forEach((e) => {
+            // check if the date is equal to the date he wants to book
+            if (
+              e.date.toISOString().split('T')[0] ===
+              date.toISOString().split('T')[0]
+            ) {
+              // update the hours to booked from the start time to the end time
+              for (let j = startTime; j < endTime; j++) {
+                if (e.hours.array[j] === true) {
+                  e.hours.array[j] = false;
+                } else {
+                  break;
+                }
+              }
+              // mark the document as modified to save the changes
+              place.markModified(`silentSeats.${booking.bookingSeats[i]}.days`); // Mark this part of the document as modified
+            }
+          });
+          await place.save();
+        }
+      }
+    } else if (booking.bookingRoom) {
+      place.rooms.forEach((e) => {
+        if (e.roomNumber === booking.bookingRoom) {
+          e.days.forEach((e) => {
+            // check if the date is equal to the date he wants to book
+            if (
+              e.date.toISOString().split('T')[0] ===
+              date.toISOString().split('T')[0]
+            ) {
+              // update the hours to booked from the start time to the end time
+              for (let j = startTime; j < endTime; j++) {
+                if (e.hours.array[j] === true) {
+                  e.hours.array[j] = false;
+                } else {
+                  break;
+                }
+              }
+              // mark the document as modified to save the changes
+              place.markModified(`rooms.${booking.bookingRoom}.days`); // Mark this part of the document as modified
+            }
+          });
+        }
+      });
+      await place.save();
+    }
+    user.booking.splice(user.booking.indexOf(booking), 1);
+    if (
+      booking.paymentMethod === 'Credit Card' ||
+      booking.paymentMethod === 'Wallet'
+    ) {
+      user.wallet += priceToPay; // add the price to the user wallet
+      await user.save();
+    } else {
+      await user.save();
+    }
+    await Booking.findByIdAndDelete(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      message: 'Booking canceled successfully',
+    });
+  }
+   else {
+    res.status(200).json({
+      status: 'fail',
+      message: 'You can not cancel a booking that has already passed',
     });
   }
 });
@@ -756,117 +1094,3 @@ async function generatePaymentToken(paymobToken, price, id) {
 
   return response.data.token;
 }
-
-exports.cancelBooking = catchAsync(async (req, res, next) => {
-  const booking = await Booking.findById(req.params.id);
-  const user = await User.findById(req.user.id);
-  const date = new Date(booking.bookingDate);
-  const startTime = booking.startTime;
-  const endTime = booking.endTime;
-  const numberOfHours = endTime - startTime;
-  const placeQuery = Place.findById(booking.placeID); // Assuming 'booking.placeID' contains the ID of the desired place
-  const place = await placeQuery.exec(); // Execute the query and wait for the result
-  const priceToPay = booking.priceToPay;
-  const tomorrowDate = new Date();
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  // console.log(tomorrowDate)
-  // console.log(booking.bookingDate)
-  // console.log(booking.placeID);
-  // console.log(place);
-  // // startTime
-  // if(startTime)
-  if (booking.bookingDate > tomorrowDate) { // check if the booking date is greater than tomorrow date or equal to it then he can cancel it
-    if (booking.bookingSeats.length > 0) {
-      // console.log("here")
-      for (let i = 0; i < booking.bookingSeats.length; i++) {
-        if (booking.bookingType === 'sharedAreaSeat') {
-          place.seats[booking.bookingSeats[i]].days.forEach((e) => {
-            // check if the date is equal to the date he wants to book
-            if (
-              e.date.toISOString().split('T')[0] ===
-              date.toISOString().split('T')[0]
-            ) {
-              // update the hours to booked from the start time to the end time
-              for (let j = startTime; j < endTime; j++) {
-                if (e.hours.array[j] === true) {
-                  console.log('here');
-                  e.hours.array[j] = false;
-                } else {
-                  break;
-                }
-              }
-              // mark the document as modified to save the changes
-              place.markModified(`seats.${booking.bookingSeats[i]}.days`); // Mark this part of the document as modified
-            }
-          });
-          await place.save();
-        } else if (booking.bookingType === 'silentSeat') {
-          place.silentSeats[booking.bookingSeats[i]].days.forEach((e) => {
-            // check if the date is equal to the date he wants to book
-            if (
-              e.date.toISOString().split('T')[0] ===
-              date.toISOString().split('T')[0]
-            ) {
-              // update the hours to booked from the start time to the end time
-              for (let j = startTime; j < endTime; j++) {
-                if (e.hours.array[j] === true) {
-                  e.hours.array[j] = false;
-                } else {
-                  break;
-                }
-              }
-              // mark the document as modified to save the changes
-              place.markModified(`silentSeats.${booking.bookingSeats[i]}.days`); // Mark this part of the document as modified
-            }
-          });
-          await place.save();
-        }
-      }
-    } else if (booking.bookingRoom) {
-      place.rooms.forEach((e) => {
-        if (e.roomNumber === booking.bookingRoom) {
-          e.days.forEach((e) => {
-            // check if the date is equal to the date he wants to book
-            if (
-              e.date.toISOString().split('T')[0] ===
-              date.toISOString().split('T')[0]
-            ) {
-              // update the hours to booked from the start time to the end time
-              for (let j = startTime; j < endTime; j++) {
-                if (e.hours.array[j] === true) {
-                  e.hours.array[j] = false;
-                } else {
-                  break;
-                }
-              }
-              // mark the document as modified to save the changes
-              place.markModified(`rooms.${booking.bookingRoom}.days`); // Mark this part of the document as modified
-            }
-          });
-        }
-      });
-      await place.save();
-    }
-    user.booking.splice(user.booking.indexOf(booking), 1);
-    if (
-      booking.paymentMethod === 'Credit Card' ||
-      booking.paymentMethod === 'Wallet'
-    ) {
-      user.wallet += priceToPay; // add the price to the user wallet
-      await user.save();
-    } else {
-      await user.save();
-    }
-    await Booking.findByIdAndDelete(req.params.id);
-    res.status(200).json({
-      status: 'success',
-      message: 'Booking canceled successfully',
-    });
-  }
-  //  else {
-  //   res.status(200).json({
-  //     status: 'fail',
-  //     message: 'You can not cancel a booking that has already passed',
-  //   });
-  // }
-});

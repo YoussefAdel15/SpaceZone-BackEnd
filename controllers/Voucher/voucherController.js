@@ -6,7 +6,6 @@ const AppError = require('../../utils/appError');
 const Voucher = require('./../../Models/voucher');
 const catchAsync = require('./../../utils/catchAsync');
 const User = require('./../../Models/user');
-const user = require('./../../Models/user');
 
 function generateVoucherCode(length) {
   let code = '';
@@ -162,6 +161,8 @@ async function generatePaymentToken(paymobToken, price, id) {
 exports.successPayment = catchAsync(async (req, res, next) => {
   const { order } = req.query;
   const voucher = await Voucher.findOne({ orderID: order });
+  const booking = await Booking.findOne({ orderID: order });
+  
   if (!voucher) {
     return next(new AppError('Voucher not found', 400));
   }
