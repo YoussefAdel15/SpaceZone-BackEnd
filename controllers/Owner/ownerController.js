@@ -70,7 +70,11 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     availableFor: req.body.availableFor,
     sharedAreaPhotos: req.body.sharedAreaPhotos,
     silentRoomPhotos: req.body.silentRoomPhotos,
-    roomPhotos: req.body.roomPhotos,
+    numberOfTrainingRooms: req.body.numberOfTrainingRooms,
+    numberOfMeetingRooms: req.body.numberOfMeetingRooms,
+    amenities : req.body.amenities,
+    rules: req.body.rules,
+    bio : req.body.bio,
   });
   const MeetingRooms = req.body.MeetingRooms;
   const TrainingRooms = req.body.TrainingRooms;
@@ -121,6 +125,8 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
       roomType: 'Meeting Room',
       price: MeetingRooms[i].price,
       seats: MeetingRooms[i].seats,
+      roomPhotos: MeetingRooms[i].roomPhotos,
+      description: MeetingRooms[i].description,
     };
     newPlace.rooms.push(meeting);
   }
@@ -130,6 +136,8 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
       roomType: 'Training Room',
       price: TrainingRooms[i].price,
       seats: TrainingRooms[i].seats,
+      roomPhotos: TrainingRooms[i].roomPhotos,
+      description: TrainingRooms[i].description,
     };
     newPlace.rooms.push(training);
   }
