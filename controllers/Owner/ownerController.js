@@ -72,9 +72,9 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     silentRoomPhotos: req.body.silentRoomPhotos,
     numberOfTrainingRooms: req.body.numberOfTrainingRooms,
     numberOfMeetingRooms: req.body.numberOfMeetingRooms,
-    amenities : req.body.amenities,
+    amenities: req.body.amenities,
     rules: req.body.rules,
-    bio : req.body.bio,
+    bio: req.body.bio,
   });
   const MeetingRooms = req.body.MeetingRooms;
   const TrainingRooms = req.body.TrainingRooms;
@@ -119,27 +119,31 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     };
     newPlace.silentSeats.push(seat);
   }
-  for (let i = 0; i < MeetingRooms.length; i++) {
-    const meeting = {
-      roomNumber: i + 1,
-      roomType: 'Meeting Room',
-      price: MeetingRooms[i].price,
-      seats: MeetingRooms[i].seats,
-      roomPhotos: MeetingRooms[i].roomPhotos,
-      description: MeetingRooms[i].description,
-    };
-    newPlace.rooms.push(meeting);
+  if (req.body.numberOfMeetingRooms !== 0) {
+    for (let i = 0; i < MeetingRooms.length; i++) {
+      const meeting = {
+        roomNumber: i + 1,
+        roomType: 'Meeting Room',
+        price: MeetingRooms[i].price,
+        seats: MeetingRooms[i].seats,
+        roomPhotos: MeetingRooms[i].roomPhotos,
+        description: MeetingRooms[i].description,
+      };
+      newPlace.rooms.push(meeting);
+    }
   }
-  for (let i = 0; i < TrainingRooms.length; i++) {
-    const training = {
-      roomNumber: i + 1,
-      roomType: 'Training Room',
-      price: TrainingRooms[i].price,
-      seats: TrainingRooms[i].seats,
-      roomPhotos: TrainingRooms[i].roomPhotos,
-      description: TrainingRooms[i].description,
-    };
-    newPlace.rooms.push(training);
+  if (req.body.numberOfTrainingRooms !== 0) {
+    for (let i = 0; i < TrainingRooms.length; i++) {
+      const training = {
+        roomNumber: i + 1,
+        roomType: 'Training Room',
+        price: TrainingRooms[i].price,
+        seats: TrainingRooms[i].seats,
+        roomPhotos: TrainingRooms[i].roomPhotos,
+        description: TrainingRooms[i].description,
+      };
+      newPlace.rooms.push(training);
+    }
   }
   // CHECK IF PLACE IS AVAILABLE FOR WEEKLY OR MONTHLY
   if (newPlace.availableFor === 'weekly') {
