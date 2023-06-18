@@ -80,8 +80,6 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
   const TrainingRooms = req.body.TrainingRooms;
   const currentDate = new Date();
   const datesArray = [currentDate];
-  const numberOfMeetingRooms = req.body.numberOfMeetingRooms;
-  const numberOfTrainingRooms = req.body.numberOfTrainingRooms;
   if (newPlace.numberOfSeats !== 0 && newPlace.hourPrice === null) {
     return next(
       new AppError('Please enter the price of the regular seat', 400)
@@ -121,7 +119,7 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
     };
     newPlace.silentSeats.push(seat);
   }
-  if (numberOfMeetingRooms !== 0) {
+  if (MeetingRooms.length !== 0) {
     for (let i = 0; i < MeetingRooms.length; i++) {
       const meeting = {
         roomNumber: i + 1,
@@ -134,7 +132,7 @@ exports.createPlaceForOwner = catchAsync(async (req, res, next) => {
       newPlace.rooms.push(meeting);
     }
   }
-  if (numberOfTrainingRooms !== 0) {
+  if (TrainingRooms.length !== 0) {
     for (let i = 0; i < TrainingRooms.length; i++) {
       const training = {
         roomNumber: i + 1,
