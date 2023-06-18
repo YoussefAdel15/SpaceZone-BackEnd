@@ -51,6 +51,7 @@ app.use('/api/owner', require('./routes/owner-routes'));
 app.use('/api/places', require('./routes/places-routes'));
 app.use('/api/contactUs', require('./routes/contactUs-routes'));
 app.use('/api/booking', require('./routes/booking-routes'));
+app.use('/api/voucher', require('./routes/voucher-routes'));
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
