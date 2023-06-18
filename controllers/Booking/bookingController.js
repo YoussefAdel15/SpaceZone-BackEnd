@@ -359,7 +359,7 @@ exports.bookSeat = catchAsync(async (req, res, next) => {
               date.toISOString().split('T')[0]
             ) {
               // update the hours to booked from the start time to the end time
-              for (let j = startTime - 1; j < endTime; j++) {
+              for (let j = startTime; j < endTime; j++) {
                 if (e.hours.array[j] === false) {
                   e.hours.array[j] = true;
                 } else {
