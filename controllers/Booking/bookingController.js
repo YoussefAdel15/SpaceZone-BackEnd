@@ -341,8 +341,8 @@ exports.bookSeat = catchAsync(async (req, res, next) => {
           priceToPay,
           bookingDate: date,
           bookingHour: numberOfHours,
-          startTime: startTime > 12 ? startTime - 12 : startTime,
-          endTime: endTime > 12 ? endTime - 12 : endTime,
+          startTime: startTime,
+          endTime: endTime,
           bookingSeat: availableSeatsIndex.length,
           bookingStatus: true,
           paymentStatus: false,
@@ -771,30 +771,55 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
   tomorrowDate.setDate(tomorrowDate.getDate() + 1);
   // console.log(tomorrowDate)
   // console.log(booking.bookingDate)
-  console.log(booking.placeID);
-  console.log(place);
+  // console.log(booking.placeID);
+  // console.log(place);
+  startTime
+  if(startTime)
   if (booking.bookingDate >= tomorrowDate) {
     // check if the booking date is greater than tomorrow date or equal to it then he can cancel it
     if (booking.bookingSeats.length > 0) {
-      for (let i = 0; i < booking.bookingSeats; i++) {
-        place.seats[booking.bookingSeats[i]].days.forEach((e) => {
-          // check if the date is equal to the date he wants to book
-          if (
-            e.date.toISOString().split('T')[0] ===
-            date.toISOString().split('T')[0]
-          ) {
-            // update the hours to booked from the start time to the end time
-            for (let j = startTime; j < endTime; j++) {
-              if (e.hours.array[j] === true) {
-                e.hours.array[j] = false;
-              } else {
-                break;
+      for (let i = 0; i < booking.bookingSeats.length; i++) {
+        if (booking.bookingType === 'sharedAreaSeat') {
+          place.seats[booking.bookingSeats[i]].days.forEach((e) => {
+            // check if the date is equal to the date he wants to book
+            if (
+              e.date.toISOString().split('T')[0] ===
+              date.toISOString().split('T')[0]
+            ) {
+              // update the hours to booked from the start time to the end time
+              for (let j = startTime; j < endTime; j++) {
+                if (e.hours.array[j] === true) {
+                  e.hours.array[j] = false;
+                } else {
+                  break;
+                }
               }
+              // mark the document as modified to save the changes
+              place.markModified(`seats.${booking.bookingSeats[i]}.days`); // Mark this part of the document as modified
             }
-            // mark the document as modified to save the changes
-            place.markModified(`seats.${booking.bookingSeats[i]}.days`); // Mark this part of the document as modified
-          }
-        });
+          });
+          await place.save();
+        } else if (booking.bookingType === 'silentSeat') {
+          place.silentSeats[booking.bookingSeats[i]].days.forEach((e) => {
+            // check if the date is equal to the date he wants to book
+            if (
+              e.date.toISOString().split('T')[0] ===
+              date.toISOString().split('T')[0]
+            ) {
+              // update the hours to booked from the start time to the end time
+              for (let j = startTime; j < endTime; j++) {
+                if (e.hours.array[j] === true) {
+                  e.hours.array[j] = false;
+                } else {
+                  break;
+                }
+              }
+              // mark the document as modified to save the changes
+              place.markModified(`silentSeats.${booking.bookingSeats[i]}.days`); // Mark this part of the document as modified
+            }
+          });
+          await place.save();
+        }
       }
     } else if (booking.bookingRoom) {
       place.rooms.forEach((e) => {
@@ -819,8 +844,8 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
           });
         }
       });
+      await place.save();
     }
-    await place.save();
     user.booking.splice(user.booking.indexOf(booking), 1);
     if (
       booking.paymentMethod === 'Credit Card' ||
