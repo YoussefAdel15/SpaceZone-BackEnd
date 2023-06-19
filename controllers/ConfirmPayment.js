@@ -160,13 +160,17 @@ exports.successPayment = catchAsync(async (req, res, next) => {
     booking.paymentStatus = true;
     await booking.save();
   } else {
-    res.send(failHTML);
+    // res.send(failHTML);
     res.status(400).json({
       status: 'fail',
       message: `No voucher or booking found with this order id: ${order}`,
     });
   }
-  res.send(successHTML);
+  res.status(200).json({
+    status: 'success',
+    message: 'Payment Successful',
+  });
+  // res.send(successHTML);
 
   /////////////////////////////
 });
