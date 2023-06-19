@@ -33,6 +33,17 @@ exports.getAllPlaces = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.getPlaces = catchAsync(async (req, res, next) => {
+
+  const places = await Place.find();
+
+  res.status(200).json({
+    status: 'success',
+    places
+  });
+
+});
+
 exports.getPlace = catchAsync(async (req, res, next) => {
   const place = await Place.findById(req.params.id);
   res.status(200).json({
