@@ -985,8 +985,8 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
     }
     user.booking.splice(user.booking.indexOf(booking), 1);
     if (
-      booking.paymentMethod === 'Credit Card' ||
-      booking.paymentMethod === 'Wallet'
+      (booking.paymentMethod === 'Credit Card' ||
+      booking.paymentMethod === 'Wallet') && booking.paymentStatus === true
     ) {
       user.wallet += priceToPay; // add the price to the user wallet
       await user.save();
