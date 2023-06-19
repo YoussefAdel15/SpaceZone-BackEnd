@@ -91,5 +91,10 @@ const bookingSchema = new mongoose.Schema({
   orderID: {
     type: String,
   },
+  roomID : {
+    type: mongoose.Schema.ObjectId,
+    ref: 'rooms',
+    select: true,
+  },
 });
 module.exports = booking = mongoose.model('booking', bookingSchema);
