@@ -6,7 +6,7 @@ const authController = require('./../controllers/User/authController');
 const router = express.Router();
 
 //GET ALL PLACES ROUTE (USER AND OWNER AND UNREGISTERED USER CAN ACCESS THIS ROUTE )
-router.route('/getAllPlaces').get(placeController.getPlaces);
+router.route('/getAllPlaces').get(placeController.getAllPlaces);
 
 //GET PLACE BY ID ROUTE (USER AND OWNER AND UNREGISTERED USER CAN ACCESS THIS ROUTE )
 router.route('/:id').get(placeController.getPlace);
