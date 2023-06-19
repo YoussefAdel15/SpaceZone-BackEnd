@@ -121,7 +121,7 @@ exports.successPayment = catchAsync(async (req, res, next) => {
           }
         }
         // mark the document as modified to save the changes
-        currentPlace.markModified(`rooms.${booking.bookingRoom}.days`); // Mark this part of the document as modified
+        place.markModified(`rooms.${booking.bookingRoom}.days`); // Mark this part of the document as modified
       }
     });
     // update the seat hours to booked
