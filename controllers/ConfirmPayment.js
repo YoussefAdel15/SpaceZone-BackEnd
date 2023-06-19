@@ -126,7 +126,7 @@ exports.successPayment = catchAsync(async (req, res, next) => {
     });
     // update the seat hours to booked
     // save the changes to the database
-    await currentPlace.save();
+    await place.save();
 
     booking.paymentStatus = true;
     await booking.save();
