@@ -102,6 +102,8 @@ exports.successPayment = catchAsync(async (req, res, next) => {
       await booking.save();
     }
   } else if (booking && booking.bookingType === 'Room') {
+    const place = await Place.findById(booking.placeID);
+    const room = place.rooms.find((e) => e.roomNumber == booking.bookingRoom);
     room.days.forEach((e) => {
       // check if the date is equal to the date he wants to book
       if (
