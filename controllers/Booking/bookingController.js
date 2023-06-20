@@ -317,7 +317,7 @@ exports.bookSeat = catchAsync(async (req, res, next) => {
 
   try {
     const response = await axios.post(
-      `https://spacezone-backend.cyclic.app/api/booking/checkAvailability/${req.params.id}`,
+      `https://spacezone-backend.onrender.com/api/booking/checkAvailability/${req.params.id}`,
       {
         Date: date,
         startTime,
@@ -520,7 +520,7 @@ exports.bookRoom = catchAsync(async (req, res, next) => {
       endTime: endTime,
     };
     const response = await axios.post(
-      `https://spacezone-backend.cyclic.app/api/booking/checkAvailabilityRoom/${placeID}/${roomID}`,
+      `https://spacezone-backend.onrender.com/api/booking/checkAvailabilityRoom/${placeID}/${roomID}`,
       dataSentToSubAPI
     );
     const priceToPay = room.price * numberOfHours;
